@@ -6,15 +6,14 @@ function readFile(filepath)
       Returns the data of 'filepath' converted into a table of numbers
       Note that the file cannot contain non-numeric values
    ]]
-   local to_return = {}
-   
+   local toReturn = {}
    for line in io.lines(filepath) do
       table.insert(toReturn, string.split(line, "\t"))
    end
 
    for i=1,#toReturn do
       for j=1,#toReturn[i] do
-	to_return[i][j] = tonumber(toReturn[i][j])
+	toReturn[i][j] = tonumber(toReturn[i][j])
       end
    end
 
@@ -33,7 +32,6 @@ function getBatch(filepath, inputCount)
    local inputs={}
    local outputs={}
 
-  -- print(data)
    for i=1,#data do
       inputs[i] = {}
       outputs[i] = {}
@@ -89,4 +87,8 @@ function convertToTensors(batches)
    end
    return inputs, outputs
    
+end
+
+function getBatchTensors(folderpath, inputCount)
+   return convertToTensors(getBatches(folderpath, inputCount))
 end

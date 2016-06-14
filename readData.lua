@@ -1,6 +1,6 @@
 require 'string'
 
-function read_file(filepath)
+function readFile(filepath)
    --[[
       Given a path to a tab-deliminated file 'filepath'
       Returns the data of 'filepath' converted into a table of numbers
@@ -9,19 +9,19 @@ function read_file(filepath)
    local to_return = {}
    
    for line in io.lines(filepath) do
-      table.insert(to_return, string.split(line, "\t"))
+      table.insert(toReturn, string.split(line, "\t"))
    end
 
-   for i=1,#to_return do
-      for j=1,#to_return[i] do
-	to_return[i][j] = tonumber(to_return[i][j])
+   for i=1,#toReturn do
+      for j=1,#toReturn[i] do
+	to_return[i][j] = tonumber(toReturn[i][j])
       end
    end
 
-   return to_return
+   return toReturn
 end
 
-function get_batch(filepath, inputCount)
+function getBatch(filepath, inputCount)
    --[[
       Given a path to a tab-deliminated nn training file with numeric values
       Which contains a number of columns equal to inputCount + [the expected number of outputs]
@@ -29,7 +29,7 @@ function get_batch(filepath, inputCount)
       Where inputs becomes a fileRowsxinputCount table
       And outputs becomes a fileRowsx(fileColumns-inputCount) table
    ]]
-   local data = read_file(filepath)
+   local data = readFile(filepath)
    local inputs={}
    local outputs={}
 
@@ -49,7 +49,7 @@ function get_batch(filepath, inputCount)
    return inputs, outputs
 end
 
-function get_batches(folderpath, inputCount)
+function getBatches(folderpath, inputCount)
    --[[
       Given a path to a folder containing a collection of tab-deliminated nn training files
       Each of which contains a table of numeric values such that each table
@@ -59,21 +59,21 @@ function get_batches(folderpath, inputCount)
       folderpath#.txt, where # is an integer such that the first file has # = 1
    ]]
    local i = 1
-   local to_return = {}
+   local toReturn = {}
    while true do --Only quit when we run out of files
       local s = folderpath .. i .. ".txt"
       if io.open(s) ~= nil then
-	 to_return[i] = {}
-	 to_return[i][1],to_return[i][2] = get_batch(s, inputCount)
+	 toReturn[i] = {}
+	 toReturn[i][1],toReturn[i][2] = getBatch(s, inputCount)
       else
-	 return to_return
+	 return toReturn
       end
       i = i + 1
    end
    
 end
 
-function convert_to_tensors(batches)
+function convertToTensors(batches)
    --[[
       Given a set of n batches of size s with i inputs and o outputs
       Returns two tables of length n

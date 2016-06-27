@@ -26,18 +26,18 @@ function getSingleSigmoidalNN(inputs, outputs, HUs)
    return model
 end
 
-function train(model, inputs, batchFolder, epochs, ofile, verbose, printFreq)
+function train(model, inputs, batchFolder, epochs, ofilepath, verbose, printFreq)
    --Retrieves the batches from the given folder and trains the given model using the given information
    --Returns the model after testing is completed
 
    local batchInputs, batchLabels = getBatchTensors(batchFolder, inputs)
-   model = trainNN(model, batchInputs, batchLabels, epochs, ofile, verbose, printFreq)
+   model = trainNN(model, batchInputs, batchLabels, epochs, ofilepath, verbose, printFreq)
    return model
 end
 
-function test(model, inputs, testFolder, ofile, verbose)
+function test(model, inputs, testFolder, ofilepath, verbose)
    --Retrieves the tests from the given folder and tests the given model using the given information
    
    local testInputs, testLabels = getBatchTensors(testFolder, inputs)
-   testNN(model, testInputs, testLabels, ofile, verbose)
+   testNN(model, testInputs, testLabels, ofilepath, verbose)
 end

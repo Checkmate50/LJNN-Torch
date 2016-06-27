@@ -1,5 +1,3 @@
-require 'string'
-
 function readFile(filepath)
    --[[
       Given a path to a tab-deliminated file 'filepath'

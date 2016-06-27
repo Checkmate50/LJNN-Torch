@@ -1,0 +1,11 @@
+Epoch 10	Current Loss = 0.38040393496958
+Epoch 20	Current Loss = 0.18530559293042
+Epoch 30	Current Loss = 0.095936688441049
+Epoch 40	Current Loss = 0.035792182772642
+Epoch 50	Current Loss = 0.018661214774748
+Epoch 60	Current Loss = 0.014537931774166
+Epoch 70	Current Loss = 0.012596724401428
+Epoch 80	Current Loss = 0.011292446119445
+Epoch 90	Current Loss = 0.010313876020405
+Epoch 100	Current Loss = 0.0095487537204185
+

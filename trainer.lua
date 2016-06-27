@@ -1,16 +1,20 @@
-function trainNN(model, batchInputs, batchLabels, epochs, ofile, verbose, printFreq)
+function trainNN(model, batchInputs, batchLabels, epochs, ofilepath, verbose, printFreq)
    --[[
       Given a neural network 'nn' with i inputs and o outputs,
       A series of training inputs 'batchInputs' with i column Tensors,
       A series of associated outputs 'batchLabels' with o column Tensors,
       A number of epochs 'epochs' to train over,
-      And whether or not training should be 'verbose'
+      Whether or not training should be 'verbose',
+      And the file to write to 'ofilepath' (if this is nil, writes to console)
       This function trains and returns nn
    ]]
    
    local criterion = nn.MSECriterion()
    local params, gradParams = model:getParameters()
    local optimState = {learningRate = .01}
+   if ofilepath ~= nil then
+      io.output(ofilepath)
+   end
    local currentLoss
 
    for epoch=1,epochs do
@@ -39,20 +43,26 @@ function trainNN(model, batchInputs, batchLabels, epochs, ofile, verbose, printF
    end
 
    io.write("\n")
+   io.output(io.stdout)
    return model
 end
 
-function testNN(model, testInputs, testLabels, ofile, verbose)
+function testNN(model, testInputs, testLabels, ofilepath, verbose)
    --[[
       Given a neural network 'nn' with i inputs and o outputs,
       A series of test inputs 'testInputs' with i column Tensors,
       A series of associated outputs 'testLabels' with o column Tensors,
-      And whether or not testing should print a percent error for each batch ('verbose'
+      Whether or not testing should print a percent error for each batch ('verbose')
+      And the file to write to 'ofilepath' (if this is nil, writes to console)
       This function tests nn with testInputs against testLabels
       And prints the average percent difference between expected and actual results
    ]]
    
    local totalDiff = 0
+   if ofilepath ~= nil then
+      io.output(ofilepath)
+   end
+   
    for batch=1,#testLabels do
       local batchDiff = 0
       for test=1,(#testLabels[batch])[1] do
@@ -72,5 +82,7 @@ function testNN(model, testInputs, testLabels, ofile, verbose)
       io.write("\n")
    end
    io.write("Average percent diff for network = " .. (totalDiff/#testLabels) .. "%\n")
+
+   io.output(io.stdout)
 end
 

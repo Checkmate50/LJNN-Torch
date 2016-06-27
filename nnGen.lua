@@ -1,4 +1,4 @@
-function getSingleTanhNN(inputs, outputs, HUs, batchFolder, testFolder, epochs, ofile, verbose)
+function getSingleTanhNN(inputs, outputs, HUs)
    --[[
       Given a number of 'inputs', 'outputs', and Hidden Layer nodes 'HUs',
       Along with training and testing data in batchFolder and testFolder
@@ -9,11 +9,10 @@ function getSingleTanhNN(inputs, outputs, HUs, batchFolder, testFolder, epochs, 
    model:add(nn.Linear(inputs, HUs))
    model:add(nn.Tanh())
    model:add(nn.Linear(HUs, outputs))
-   model = trainTest(model, inputs, batchFolder, testFolder, epochs, ofile, verbose)
    return model
 end
 
-function getSingleSigmoidalNN(inputs, outputs, HUs, batchFolder, testFolder, epochs, ofile, verbose)
+function getSingleSigmoidalNN(inputs, outputs, HUs)
    --[[
       Given a number of 'inputs', 'outputs', and Hidden Layer nodes 'HUs',
       Along with training and testing data in batchFolder and testFolder
@@ -24,16 +23,21 @@ function getSingleSigmoidalNN(inputs, outputs, HUs, batchFolder, testFolder, epo
    model:add(nn.Linear(inputs, HUs))
    model:add(nn.Sigmoid())
    model:add(nn.Linear(HUs, outputs))
-   model = trainTest(model, inputs, batchFolder, testFolder, epochs, ofile, verbose)
    return model
 end
 
-function trainTest(model, inputs, batchFolder, testFolder, epochs, ofile, verbose)
-   --Tests and trains the given model using the given training/testing information
-   
+function train(model, inputs, batchFolder, epochs, ofile, verbose, printFreq)
+   --Retrieves the batches from the given folder and trains the given model using the given information
+   --Returns the model after testing is completed
+
    local batchInputs, batchLabels = getBatchTensors(batchFolder, inputs)
-   local testInputs, testLabels = getBatchTensors(testFolder, inputs)
-   model = trainNN(model, batchInputs, batchLabels, epochs, ofile, verbose)
-   testNN(model, testInputs, testLabels, ofile, verbose)
+   model = trainNN(model, batchInputs, batchLabels, epochs, ofile, verbose, printFreq)
    return model
+end
+
+function test(model, inputs, testFolder, ofile, verbose)
+   --Retrieves the tests from the given folder and tests the given model using the given information
+   
+   local testInputs, testLabels = getBatchTensors(testFolder, inputs)
+   testNN(model, testInputs, testLabels, ofile, verbose)
 end

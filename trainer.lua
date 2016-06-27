@@ -1,4 +1,4 @@
-function trainNN(model, batchInputs, batchLabels, epochs, ofile, verbose)
+function trainNN(model, batchInputs, batchLabels, epochs, ofile, verbose, printFreq)
    --[[
       Given a neural network 'nn' with i inputs and o outputs,
       A series of training inputs 'batchInputs' with i column Tensors,
@@ -30,11 +30,15 @@ function trainNN(model, batchInputs, batchLabels, epochs, ofile, verbose)
 	 _,fs = optim.sgd(feval, params, optimState)
 	 currentLoss = currentLoss + fs[1]
       end
-      if verbose then
-	 print("Current Loss = " .. currentLoss)
+      if epoch % printFreq == 0 then
+	 if verbose then
+	    io.write("Epoch " .. epoch .. "\t")
+	 end
+	 io.write("Current Loss = " .. currentLoss .. "\n")
       end
    end
 
+   io.write("\n")
    return model
 end
 
@@ -60,10 +64,13 @@ function testNN(model, testInputs, testLabels, ofile, verbose)
       batchDiff = batchDiff/(#testLabels[batch])[1]
       totalDiff = totalDiff + batchDiff
       if verbose then
-	 print("Average percent diff for batch " .. batch .. " = " .. batchDiff .. "%")
+	 io.write("Average percent diff for batch " .. batch .. " = " .. batchDiff .. "%\n")
       end
    end
 
-   print("\nAverage percent diff for network = " .. (totalDiff/#testLabels) .. "%")
+   if verbose then
+      io.write("\n")
+   end
+   io.write("Average percent diff for network = " .. (totalDiff/#testLabels) .. "%\n")
 end
 

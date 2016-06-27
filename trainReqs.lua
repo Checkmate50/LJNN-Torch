@@ -1,4 +1,5 @@
 require 'math'
+require 'io'
 require 'string'
 require 'nn'
 require 'optim'

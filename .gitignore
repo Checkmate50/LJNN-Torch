@@ -39,6 +39,9 @@ luac.out
 *.x86_64
 *.hex
 
+# Temporary Emacs Files
+*~
+
 # Net Files
 *.net
 *.nndata

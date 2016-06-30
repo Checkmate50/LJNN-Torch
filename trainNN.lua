@@ -19,7 +19,6 @@ end
 
 local loadLocation = arg[1]
 local trainFolder = arg[2]
-local inputs = CLA["inputs"]
 local outputs = CLA["outputs"]
 local trainResults = CLA["train results"]
 local testResults = CLA["test results"]
@@ -30,9 +29,7 @@ local saveLocation = CLA["save"]
 
 local model = torch.load(loadLocation)
 
-if inputs == nil then
-   inputs = inferInputs(trainFolder, outputs)
-end
+inputs = inferInputs(trainFolder, outputs)
 
 model = train(model, inputs, trainFolder, epochs, trainResults, verbose, printFreq)
 

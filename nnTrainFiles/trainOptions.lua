@@ -16,7 +16,6 @@ function constructCLAOptions()
    options["p"] = {"print freq", true, true, false}
    options["pf"] = {"print freq", true, true, false}
    options["s"] = {"save", true, false, false}
-   options["i"] = {"inputs", true, true, false}
 
    return options
 end

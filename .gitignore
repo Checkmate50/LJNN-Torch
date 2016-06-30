@@ -41,3 +41,4 @@ luac.out
 
 # Net Files
 *.net
+*.nndata

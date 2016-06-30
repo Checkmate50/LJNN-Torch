@@ -90,3 +90,10 @@ end
 function getBatchTensors(folderpath, inputCount)
    return convertToTensors(getBatches(folderpath, inputCount))
 end
+
+function inferInputs(folderpath, outputs)
+   local filepath = folderpath .. "1.txt"
+   local line = io.lines(filepath)(1)
+
+   return #(string.split(line, "\t"))-outputs
+end

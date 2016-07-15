@@ -45,3 +45,8 @@ luac.out
 # Net Files
 *.net
 *.nndata
+
+# lammps output files
+*.lammpstrj
+*.xyz
+*.dcd

@@ -50,3 +50,5 @@ luac.out
 *.lammpstrj
 *.xyz
 *.dcd
+log.*
+restart*

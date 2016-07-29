@@ -6,7 +6,7 @@ function readFile(filepath)
    ]]
    local toReturn = {}
    for line in io.lines(filepath) do
-      table.insert(toReturn, string.split(line, "\t"))
+      table.insert(toReturn, string.split(line, " "))
    end
 
    for i=1,#toReturn do
@@ -18,30 +18,28 @@ function readFile(filepath)
    return toReturn
 end
 
-function getBatch(filepath, inputCount)
+function getBatch(filepath)
    --[[
       Given a path to a tab-deliminated nn training file with numeric values
-      Which contains a number of columns equal to inputCount + [the expected number of outputs]
-      This function returns two values: the tables inputs and outputs
+      Which contains a number of columns equal to inputCount
+      And a row at the end indicating the output
+      This function returns two values: the tables inputs and output
       Where inputs becomes a fileRowsxinputCount table
       And outputs becomes a fileRowsx(fileColumns-inputCount) table
    ]]
    local data = readFile(filepath)
    local inputs={}
-   local outputs={}
+   local outputs = {}
 
-   for i=1,#data do
+   for i=1,(#data-1) do
       inputs[i] = {}
-      outputs[i] = {}
       for j=1,#data[i] do
-	 if j<=inputCount then
-	    inputs[i][j]=data[i][j]
-	 else
-	    outputs[i][j-inputCount]=data[i][j]
-	 end
+	 inputs[i][j] = data[i][j]
       end
    end
-
+   for i=1,#data[#data] do
+      outputs[i] = data[#data][i]
+   end
    return inputs, outputs
 end
 
@@ -91,9 +89,9 @@ function getBatchTensors(folderpath, inputCount)
    return convertToTensors(getBatches(folderpath, inputCount))
 end
 
-function inferInputs(folderpath, outputs)
+function inferInputs(folderpath)
    local filepath = folderpath .. "1.nndata"
    local line = io.lines(filepath)(1)
 
-   return #(string.split(line, "\t"))-outputs
+   return #(string.split(line, "\t"))
 end

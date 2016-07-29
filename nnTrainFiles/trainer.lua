@@ -1,3 +1,26 @@
+function sumTensor(t) --currently unused
+   local result = torch.Tensor(1, (#t)[2])
+   for i=1,(#t)[2] do
+      local sum = 0
+      for j=1,(#t)[1] do
+	 sum = sum + t[j][i]
+      end
+      result[i] = sum
+   end
+   return result
+end
+
+function splitTensor(t, count)
+   local results = torch.Tensor(count, (#t)[1])
+   for i=1,(#t)[1] do
+      local num = t[i]/count
+      for j=1,count do
+	 results[j][i] = num
+      end
+   end
+   return results
+end
+
 function trainNN(model, batchInputs, batchLabels, epochs, ofilepath, verbose, printFreq)
    --[[
       Given a neural network 'nn' with i inputs and o outputs,
@@ -22,10 +45,10 @@ function trainNN(model, batchInputs, batchLabels, epochs, ofilepath, verbose, pr
 	 currentLoss = 0
 	 local function feval(params)
 	    gradParams:zero()
-
 	    local outputs = model:forward(batchInputs[batch])
-	    local loss = criterion:forward(outputs, batchLabels[batch])
-	    local dloss_doutput = criterion:backward(outputs, batchLabels[batch])
+	    local split_labels = splitTensor(batchLabels[batch], (#batchInputs[batch])[1])
+	    local loss = criterion:forward(outputs, split_labels)
+	    local dloss_doutput = criterion:backward(outputs, split_labels)
 	    model:backward(batchInputs[batch], dloss_doutput)
 
 	    return loss, gradParams
@@ -65,13 +88,11 @@ function testNN(model, testInputs, testLabels, ofilepath, verbose)
    
    for batch=1,#testLabels do
       local batchDiff = 0
-      for test=1,(#testLabels[batch])[1] do
-	 local expected = testLabels[batch][test][1]
-	 local actual = model:forward(testInputs[batch][test])[1]
-	 local diff = math.abs((actual-expected)/expected)*100
-	 batchDiff = batchDiff + diff
-      end
-      batchDiff = batchDiff/(#testLabels[batch])[1]
+      local expected = testLabels[batch][1]
+      local result = model:forward(testInputs[batch])
+      local actual = sumTensor(result)[1][1]
+      local diff = math.abs((actual-expected)/expected)*100
+      batchDiff = diff/(#testLabels[batch])[1]
       totalDiff = totalDiff + batchDiff
       if verbose then
 	 io.write("Average percent diff for batch " .. batch .. " = " .. batchDiff .. "%\n")

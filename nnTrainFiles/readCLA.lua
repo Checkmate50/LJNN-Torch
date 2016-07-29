@@ -44,13 +44,18 @@ function readCLA(arg, options)
 	    return CLA
 	 end
 	 s = s:sub(2,-1) --remove "-" from start of s
+	 if options[s] == nil then
+	    CLA["help"] = true
+	    return CLA
+	 end
+	 
 	 if options[s][2] then
 	    option = options[s][1]
 	    number = options[s][3]
 	    array = options[s][4]
 	 else
 	    CLA[options[s][1]] = true
-	    if options[s][1] == "help" then
+	    if s == "help" then
 	       return CLA
 	    end
 	 end

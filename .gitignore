@@ -52,3 +52,7 @@ luac.out
 *.dcd
 log.*
 restart*
+
+# result files
+*.loss
+*.pdiffs

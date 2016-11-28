@@ -1,5 +1,5 @@
 require 'nnTrainFiles/nnReqs'
-require 'nnTrainFiles/trainOptions'
+require 'nnTrainFiles/testOptions'
 
 if arg[1] == nil or arg[2] == nil then
    help()

@@ -13,6 +13,7 @@ function constructCLAOptions()
    options["v"] = {"verbose", false}
    options["o"] = {"outputs", true, true, false}
    options["e"] = {"epochs", true, true, false}
+   options["lr"] = {"learning rate", true, true, false}
    options["p"] = {"print freq", true, true, false}
    options["pf"] = {"print freq", true, true, false}
    options["s"] = {"save", true, false, false}
@@ -35,6 +36,7 @@ function constructDefaults(CLA)
 
    defaults["outputs"] = 1
    defaults["verbose"] = false
+   defaults["learning rate"] = .01
    defaults["epochs"] = 100
    defaults["print freq"] = 10
    

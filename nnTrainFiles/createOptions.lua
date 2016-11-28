@@ -17,6 +17,8 @@ function constructCLAOptions()
    options["ter"] = {"test results", true, false, false}
    options["teo"] = {"test results", true, false, false}
    options["testout"] = {"test results", true, false, false}
+   options["nt"] = {"no train", false}
+   options["notrain"] = {"no train", false}
    options["v"] = {"verbose", false}
    options["o"] = {"outputs", true, true, false}
    options["e"] = {"epochs", true, true, false}
@@ -51,6 +53,7 @@ function constructDefaults(CLA)
    end
 
    defaults["outputs"] = 1
+   defaults["no train"] = false
    defaults["verbose"] = false
    defaults["epochs"] = 100
    defaults["print freq"] = 10

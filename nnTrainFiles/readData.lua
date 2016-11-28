@@ -93,5 +93,5 @@ function inferInputs(folderpath)
    local filepath = folderpath .. "1.nndata"
    local line = io.lines(filepath)(1)
 
-   return #(string.split(line, "\t"))
+   return #(string.split(line, " "))
 end

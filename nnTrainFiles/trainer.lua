@@ -21,20 +21,22 @@ function splitTensor(t, count)
    return results
 end
 
-function trainNN(model, batchInputs, batchLabels, epochs, ofilepath, verbose, printFreq)
+function trainNN(model, batchInputs, batchLabels, epochs, lr, ofilepath, verbose, printFreq)
    --[[
-      Given a neural network 'nn' with i inputs and o outputs,
+      Given a neural network 'model' with:
       A series of training inputs 'batchInputs' with i column Tensors,
       A series of associated outputs 'batchLabels' with o column Tensors,
       A number of epochs 'epochs' to train over,
+      A learning rate 'lr'
       Whether or not training should be 'verbose',
-      And the file to write to 'ofilepath' (if this is nil, writes to console)
+      The file to write to 'ofilepath' (if this is nil, writes to console)
+      And a frequency at which to print model state
       This function trains and returns nn
    ]]
    
    local criterion = nn.MSECriterion()
    local params, gradParams = model:getParameters()
-   local optimState = {learningRate = .01}
+   local optimState = {learningRate = lr}
    if ofilepath ~= nil then
       io.output(ofilepath)
    end

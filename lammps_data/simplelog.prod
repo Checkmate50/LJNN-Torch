@@ -1,0 +1,43 @@
+fix 		1 all nvt temp 50.0 50.0 1.0
+run		400
+Neighbor list info ...
+  1 neighbor list requests
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 11
+  ghost atom cutoff = 11
+  binsize = 5.5 -> bins = 10 10 10
+Memory usage per processor = 3.75797 Mbytes
+Step Temp PotEng 
+       0           50   -41.803497 
+     100    166.77834   -44.442315 
+     200    148.50954   -44.638735 
+     300    138.57773   -44.727364 
+     400    112.55355   -44.627827 
+Loop time of 0.0936949 on 1 procs for 400 steps with 172 atoms
+
+Performance: 737.713 ns/day, 0.033 hours/ns, 4269.175 timesteps/s
+76.8% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.08524    | 0.08524    | 0.08524    |   0.0 | 90.98
+Neigh   | 0.00069809 | 0.00069809 | 0.00069809 |   0.0 |  0.75
+Comm    | 0.00016928 | 0.00016928 | 0.00016928 |   0.0 |  0.18
+Output  | 0.0027108  | 0.0027108  | 0.0027108  |   0.0 |  2.89
+Modify  | 0.0040934  | 0.0040934  | 0.0040934  |   0.0 |  4.37
+Other   |            | 0.0007832  |            |       |  0.84
+
+Nlocal:    172 ave 172 max 172 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    7413 ave 7413 max 7413 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 7413
+Ave neighs/atom = 43.0988
+Neighbor list builds = 3
+Dangerous builds = 0
+Total wall time: 0:00:00

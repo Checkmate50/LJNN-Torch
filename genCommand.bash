@@ -1,0 +1,1 @@
+lammps -echo screen -var seed 96030 < ../lammps_data/simple.lmp

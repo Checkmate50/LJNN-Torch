@@ -1,0 +1,50 @@
+########################
+### GENERAL SETTINGS ###
+########################
+runner_mode                            1                   # 1=calculate symmetry functions, 2=fitting mode, 3=predicition mode
+number_of_elements                     1                   # number of elements
+elements                               B                 # specification of elements
+random_seed                            REPL_RANDOM             # seed for initial random weight parameters and train/test splitting
+normalize_nodes                                            # normalize input of nodes
+cutoff_type                            2                   # type of cutoff function
+global_hidden_layers_short             2                   # number of hidden layers
+global_nodes_short                     70 70            # number of nodes in hidden layers
+global_activation_short                t t l              # activation functions (t,g,c,s,S,e,l)
+test_fraction                          0.10                # threshold for splitting between fitting and test set
+scale_symmetry_functions                                   # scale symmetry functions
+scale_min_short                        -1.0                # minimum value for scaling
+scale_max_short                        1.0                 # maximum value for scaling
+center_symmetry_functions                                  # remove center of mass of structure function values
+
+##############
+### MODE 2 ###
+##############
+epochs                                 50                  # number of epochs
+use_short_forces                                           # use forces for fitting
+short_energy_error_threshold           1.00                # threshold of adaptive Kalman filter short E
+short_force_error_threshold            1.00                # threshold of adaptive Kalman filter short F
+short_energy_fraction                  1.00                # percentage of energies used for fitting 100%=1.0
+short_force_fraction                   0.01               # percentage of forces used for fitting 100%=1.0
+#use_old_weights_short                                      # restart fitting with old weight parameters for short
+weights_min                            -1.0                # minimum value for initial random short range weights
+weights_max                            1.0                 # maximum value for initial random short range weights
+nguyen_widrow_weights_short                                # initialize short range weights according to Nguyen Widrow scheme
+precondition_weights                                       # precondition initial weights
+write_trainpoints                      5                   # write trainpoints.out and testpoints.out files
+write_trainforces                      5                   # write trainforces.out and testforces.out files
+write_neuronstats                      5                   # write neuron statistics
+#repeated_energy_update                                     # repeat energy update for each force update
+epoch_start_energy_fit                 0                   # epoch at which energy fitting starts
+epoch_stop_energy_fit                  9999                # epoch at which energy fitting stops
+epoch_start_forces_fit                 0                   # epoch at which force fitting starts
+epoch_stop_forces_fit                  9999                # epoch at which force fitting stops
+kalman_type                            3                   # Kalman filter type (1=EKF (n.i.), 2=MS-EKF, 3=MS-FMEKF)
+kalman_adaptive_type                   2                   # Kalman adaptive filter type (1=offline, 2=online)
+kalman_epsilon                         0.001               # parameter for covariance matrix initialization (0.001 - 0.01)
+kalman_eta                             0.001               # learning rate / measurement noise
+kalman_q0                              0.00                # initial process noise
+kalman_qtau                            2.302               # process noise damping
+kalman_qmin                            1.0E-6              # minimum value of process noise
+kalman_lambda_short                    0.98                # Kalman parameter short E/F
+kalman_nue_short                       0.9989              # Kalman parameter short E/F
+

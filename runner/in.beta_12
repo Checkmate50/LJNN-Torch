@@ -1,0 +1,118 @@
+
+#i#i#i#i#i#i#i#i#i#i#i#i#i#this is our LAMMPS file
+
+
+units		metal
+atom_style 	full
+boundary 	p p p
+
+#Crystal
+
+variable        T1 equal 50             # temperature of the simulation
+variable        T2 equal 50             # temperature of the simulation
+variable        p equal 0               # constant pressure of the simulation
+variable        runeq equal 1000000      # length of equilibration run
+variable        step equal .00100         # time step in femptosecond
+variable        out equal 100         # frequency of writing thermo quantities to output file      
+variable        nose  equal ${step}*100  #originally * 100
+variable        pdamp  equal ${nose}*5
+variable 		bas_out equal 500
+
+variable x_l equal 2.922
+variable y_l equal 5.057
+variable z_l equal 30.0
+variable n_x equal 16
+variable n_y equal 12
+variable lattice_const equal 30
+#variable name string beta_12_npt_${T1}-${T2}
+variable name string beta_12
+log 		log.B_${name}
+
+
+processors * * 1
+#was 30 however pressure was high as a result
+lattice custom ${lattice_const} &
+	a1   0.097400 0.000000 0.000000 & 
+	a2   0.000000 0.168566667 0.000000 &
+	a3   0.000000 0.000000 1.000000 &
+	basis 0.500000 0.000000 0.333333 &
+	basis 0.000000 0.166666 0.333333 &
+	basis 0.500000 0.333333 0.333333 &
+	basis 0.000000 0.500000 0.333333 &
+	basis 0.500000 0.666666 0.333333 
+
+#x_y_tilt is 6.725*cos(89.61 degrees)*3
+region sim_box prism 0.0 $(v_n_x*v_x_l) 0.0 $(v_n_y*v_y_l) 0.0 ${z_l} 0.0 0.0 0.0 units box
+create_box 1 sim_box
+create_atoms 1 box
+
+change_box all triclinic
+
+#read_data start.data
+#Atomic Information
+
+#write_dump 	all xyz hadron.xyz modify element Es 
+#delete_atoms	group all
+#write_data temp3.atom
+
+
+#neigh_modify exclude type 3 3
+#neigh_modify exclude type 3 2
+#neigh_modify exclude type 3 1
+
+mass 1 10.811
+
+
+#Pair Interaction:
+pair_style 	runner showew no showewsum ${out} maxew 10000 resetew yes dir .
+#epsilon << 1kbT .025
+#pair coeff 	atom1_type atom2_type epsilon sigma 
+pair_coeff	* * 6.350126988  #12 angstrum
+#He info here http://www5.in.tum.de/lehre/vorlesungen/sci_compII/ss12/tutorial_B/slides_ex2.pdf
+#WCA_Potential w/ epsilon to 1 for 3 1 and 3 2 
+
+#neighbor $(v_cutoff) multi
+#neigh_modify page 5000000
+#neigh_modify one 500000
+
+#kspace_style	ewald 1.0e-4
+
+
+#minimize 1.0e-4 1.0e-6 100 1000
+velocity	all create ${T1} ${seed} dist gaussian mom yes rot yes
+fix sss all nvt temp 300 300 ${nose}
+run 0
+unfix sss
+write_dump      all xyz ${name}_start.xyz modify element B sort id
+write_dump      dcd xyz ${name}_start.dcd
+
+variable a equal cella
+variable b equal cellb
+variable c equal cellc
+variable gamma equal cellgamma
+variable beta equal cellbeta
+variable alpha equal cellalpha
+
+print "params $a $b $c ${alpha} ${beta} ${gamma}" file bas_init_unit_cell_${name}
+
+dump 4 all xyz ${bas_out} bas_${name}.xyz
+dump_modify 4 sort id
+fix cell all print ${bas_out} "${step} $a $b $c ${alpha} ${beta} ${gamma}" file bas_unit_cell_${name}
+#fix cell print ${bas_out} "$step " append bas_unit_cell_${name}
+
+#dump   3 all xyz ${out}  ${name}.xyz 
+dump    2 all dcd ${out} ${name}.dcd 
+#dump_modify     3 element B
+thermo          ${out}
+thermo_style	custom step temp pe etotal press enthalpy cella cellb cellc cellalpha cellbeta cellgamma 
+timestep        ${step}
+#fix             2 all npt temp ${T1} ${T2} ${nose} x $p $p ${pdamp} y $p $p ${pdamp} xy 0.0 0.0 ${pdamp} couple none 
+fix             2 all nvt temp ${T1} ${T2} ${nose} #x $p $p ${pdamp} y $p $p ${pdamp} xy 0.0 0.0 ${pdamp} couple none 
+#fix      1 all plumed plumedfile plumed.dat outfile plumed.out
+fix		3 all momentum 100 linear 1 1 1
+
+
+run 		${runeq}
+
+unfix 		2
+

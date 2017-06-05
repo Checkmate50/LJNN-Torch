@@ -1,0 +1,5 @@
+layers	2	# The number of layers we want to have
+nodes	10  10	# The number of nodes in each layer (respectively)
+activation_functions	t    t  # The activation function used by each layer
+
+verbose			False	# Whether or not the training and testing code should print verbosely

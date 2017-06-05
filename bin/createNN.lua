@@ -1,5 +1,5 @@
-require 'nnTrainFiles/nnReqs'
-require 'nnTrainFiles/createOptions'
+require 'bin/nnTrainFiles/nnReqs'
+require 'bin/nnTrainFiles/createOptions'
 
 local options = constructCLAOptions()
 local CLA = readCLA(arg, options) --CLA = Command Line Arguments

@@ -1,0 +1,9 @@
+2functions	2	# The type of each two-body function
+2Rc		8	# The cutoff for each two-body function
+2sigma		0.5	# The offset difference for each two-body function
+2count		20	# The number of each two-body function
+
+3functions		# These are as above, but for three-body functions
+3Rc
+3sigma
+3count

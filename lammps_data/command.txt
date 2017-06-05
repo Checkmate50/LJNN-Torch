@@ -1,0 +1,1 @@
+lammps -echo screen -var seed $RANDOM < simple.lmp

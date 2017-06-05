@@ -16,7 +16,9 @@ create_atoms 	1 region cryst
 
 mass		1 12 
 
-pair_style 	lj/cut 9
+variable        out equal 100         # frequency of writing thermo quantities to output file
+pair_style 	runner showew no showewsum ${out} maxew 10000 resetew yes dir .
+#pair_style 	lj/cut 9
 pair_coeff 	1 1 0.05 3.0 	#solid at 0.05/liquid at 0.25 at 300 K
 pair_modify 	shift yes
 

@@ -1,0 +1,17 @@
+scaling.data:
+sort them!
+element(start at 1) symm_function min max average
+...
+meanEnergyPerAtom rangeEnergyPerAtom
+
+input.nn and input.nn.RuNNer++ (identical):
+symmetry_functions:
+order by 2b/3b|rc|eta|zeta|lambda|rs
+2-body:
+symfunction_short atom_type(from) 2 atom_type(to) eta rs(shift) rc
+3-body:
+symfunction_short center_atom_type 3 second_atom_type third_atom_type eta lambda zeta rc
+
+weights.006.data:
+weights of network
+see email for order

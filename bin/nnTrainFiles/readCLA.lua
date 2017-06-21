@@ -6,6 +6,9 @@ function readCLA(arg, options)
       {optionName, hasValue, isNumber, isArray}
       Returns a table indicating the results of this reading
    ]]
+   if arg[1] ~= "-CLA" then
+      return readFromFiles(arg, options)
+   end
    local CLA = {}
    local option, index, number, array
    for i=1,#arg do
@@ -44,6 +47,7 @@ function readCLA(arg, options)
 	    return CLA
 	 end
 	 s = s:sub(2,-1) --remove "-" from start of s
+	    
 	 if options[s] == nil then
 	    CLA["help"] = true
 	    return CLA
@@ -66,6 +70,62 @@ function readCLA(arg, options)
    return CLA
 end
 
+function readFromFiles(arg)
+   --[[
+      Given a list of arguments 'arg' of info files to read
+      Returns a table of the data stored in these files
+   ]]
+   local toReturn = {}
+   for i = 1,#arg do
+      fileData = readFromFile(arg[i])
+      for key,value in pairs(fileData) do
+	 if toReturn[key] == nil then
+	    toReturn[key] = value
+	 end
+      end
+   end
+   return toReturn
+end
+
+function readFromFile(filename)
+   --[[
+      Given an info file 'filename'
+      Reads the data from that file
+      And returns a table of the data (nicely formatted)
+   ]]
+   local toReturn = {}
+   for line in io.lines(filename) do
+      sline = {}
+      if line == "" or string.sub(line, 1, 1) == "#" then
+	 goto continue
+      end
+      sline = string.split(string.split(line, "#")[1], "%s")
+      if #sline == 0 then
+	 goto continue
+      end
+      toAdd = {}
+      for i = 1,#sline do
+	 if sline[i] ~= "" then
+	    temp = tonumber(sline[i])
+	    if temp ~= nil then
+	       table.insert(toAdd, temp)
+	    else
+	       table.insert(toAdd, sline[i])
+	    end
+	 end
+      end
+      index = toAdd[1]
+      table.remove(toAdd, 1)
+      if #toAdd == 1 then
+	 toReturn[index] = toAdd[1]
+      else
+	 toReturn[index] = toAdd
+      end
+      ::continue::
+   end
+   return toReturn
+end
+      
 function addDefaults(CLA, defaults)
    --[[
       Adds the default options to the given CLA
@@ -90,7 +150,9 @@ function help(message)
       Prints the usage for this program and exits
    ]]
 
-   io.write("This is a usage message!\n")
+   io.write("Calling this file directly is obsolete.  You probably want to run main.py with the correct options.\n")
+   io.write("If you insist on calling this script directly, you probably want to run [name_of_script].lua [ttInfoFile].info [nnInfoFile].info.\n")
+   io.write("If you really don't want to use this setup, you can take a look at nnTrainFiles/[create {OR} train {OR} test {OR} translate]CLA.lua for each file, respectively, to get an idea for the command line arguments.  If you choose this route, best of luck.\n")
    os.exit()
    
 end

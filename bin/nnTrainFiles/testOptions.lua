@@ -7,9 +7,9 @@ function constructCLAOptions()
    options = {}
 
    options["h"] = {"help", false}
-   options["ter"] = {"test results", true, false, false}
-   options["teo"] = {"test results", true, false, false}
-   options["testout"] = {"test results", true, false, false}
+   options["ter"] = {"testResults", true, false, false}
+   options["teo"] = {"testResults", true, false, false}
+   options["testout"] = {"testResults", true, false, false}
    options["v"] = {"verbose", false}
    options["o"] = {"outputs", true, true, false}
 

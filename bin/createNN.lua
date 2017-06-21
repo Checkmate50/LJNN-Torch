@@ -13,34 +13,38 @@ end
 
 local inputs = CLA["inputs"]
 local outputs = CLA["outputs"]
-local shouldTrain = not CLA["no train"]
-local trainFolder = CLA["train folder"]
-local testFolder = CLA["test folder"]
-local trainResults = CLA["train results"]
-local testResults = CLA["test results"]
+local shouldTrain = not CLA["noTrain"]
+local trainFolder = CLA["trainFolder"]
+local testFolder = CLA["testFolder"]
+local trainResults = CLA["trainTesults"]
+local testResults = CLA["testResults"]
 local verbose = CLA["verbose"]
 local epochs = CLA["epochs"]
-local printFreq = CLA["print freq"]
-local levelCount = CLA["level count"]
-local HUs = CLA["HUs"]
-local levelTypes = CLA["level types"]
+local printFreq = CLA["printFreq"]
+local layers = CLA["layers"]
+local nodes = CLA["nodes"]
+local activationFunctions = CLA["activationFunctions"]
 local saveLocation = CLA["save"]
-
 if inputs == nil then
    inputs = inferInputs(trainFolder, outputs)
 end
-local model = getLinearNN(inputs, outputs, HUs, levelTypes)
-io.write("Model created\n\n")
+local model = getLinearNN(inputs, outputs, nodes, activationFunctions)
+if verbose then
+   io.write("Neural Network Created\n")
+end
 
 --Attempt to train the model
+--[[ This is legacy, only use if you don't want to use the complete main.py package
 local trained = false
 if shouldTrain then
    model, trained = train(model, inputs, trainFolder, epochs, .01, trainResults, verbose, printFreq)
 end
-if trained then
-   io.write("Model trained\n\n")
-else
-   io.write("No training folder given; model not trained\n")
+if verbose then
+   if trained then
+      io.write("Model trained\n\n")
+   else
+      io.write("No training folder given; model not trained\n")
+   end
 end
 
 --Test the model if requested
@@ -50,11 +54,14 @@ if tested then
 else
    io.write("No test folder given; model not tested\n")
 end
+]]
 
 --Save the model if requested
 if saveLocation == nil then
-   io.write("No save file given; model not saved\n")
+   io.write("Must give save location for model")
 else
    torch.save(saveLocation, model)
-   io.write("Model saved to " .. saveLocation .. "\n")
+   if verbose then
+      io.write("Model saved to " .. saveLocation .. "\n")
+   end
 end

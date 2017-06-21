@@ -5,9 +5,24 @@ if arg[1] == nil or arg[2] == nil then
    help()
 end
 
-local newArgs = {table.unpack(arg, 3, #arg)}
-local options = constructCLAOptions()
-local CLA = readCLA(newArgs, options) --CLA = Command Line Arguments
+local CLA
+local trainFolder
+local loadLocation
+if arg[1] == "-CLA" then
+   loadLocation = arg[1]
+   testFolder = arg[2]
+   local newArgs = {table.unpack(arg, 3, #arg)}
+   local options = constructCLAOptions()
+   CLA = readCLA(newArgs, options) --CLA = Command Line Arguments
+else
+   CLA = readCLA(arg, options)
+   if CLA["trainFolder"] == nil or CLA["save"] == nil then
+      print("Must give a train folder and save location in nn.info")
+      return
+   end
+   testFolder = CLA["testFolder"]
+   loadLocation = CLA["save"]
+end
 
 local defaults
 defaults, CLA = constructDefaults(CLA)
@@ -17,10 +32,8 @@ if CLA["help"] then
    help()
 end
 
-local loadLocation = arg[1]
-local testFolder = arg[2]
 local outputs = CLA["outputs"]
-local testResults = CLA["test results"]
+local testResults = CLA["testResults"]
 local verbose = CLA["verbose"]
 
 local model = torch.load(loadLocation)

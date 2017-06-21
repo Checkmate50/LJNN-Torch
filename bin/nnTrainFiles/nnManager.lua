@@ -1,29 +1,29 @@
-function getLinearNN(inputs, outputs, HUs, levelTypes)
+function getLinearNN(inputs, outputs, nodes, activationFunctions)
    --[[
       Given a number of nn 'inputs'
       A number of nn 'outputs'
       A number of 'levels' of hidden layers
-      A table of the number of hidden nodes per level 'HUs'
+      A table of the number of hidden nodes per level 'nodes'
       And the connection type of each layer 'levels'
       returns a sequential model meeting these specifications
       (Note that the only supported connections are t=tanh and s=sigmoid)
    ]]
 
    local model = nn.Sequential()
-   table.insert(HUs, outputs)
-   model:add(nn.Linear(inputs, HUs[1]))
-   local final = #HUs-1
+   table.insert(nodes, outputs)
+   model:add(nn.Linear(inputs, nodes[1]))
+   local final = #nodes-1
    for i=1,final do
-      if levelTypes[i] == "t" then
+      if activationFunctions[i] == "t" then
 	 model:add(nn.Tanh())
-      elseif levelTypes[i] == "s" then
+      elseif activationFunctions[i] == "s" then
 	 model:add(nn.Sigmoid())
       else
-	 io.write("Level Type " .. levelTypes[i] .. " not supported\n")
+	 io.write("Level Type " .. activationFunctions[i] .. " not supported\n")
 	 os.exit()
       end
 
-      model:add(nn.Linear(HUs[i], HUs[i+1]))
+      model:add(nn.Linear(nodes[i], nodes[i+1]))
    end
    return model
 end

@@ -56,3 +56,9 @@ restart*
 # result files
 *.loss
 *.pdiffs
+
+# runner files
+runner/*
+
+# pyc files
+*.pyc

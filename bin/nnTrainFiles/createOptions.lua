@@ -7,28 +7,28 @@ function constructCLAOptions()
    options = {}
 
    options["h"] = {"help", false}
-   options["tr"] = {"train folder", true, false, false}
-   options["train"] = {"train folder", true, false, false}
-   options["te"] = {"test folder", true, false, false}
-   options["test"] = {"test folder", true, false, false}
-   options["trr"] = {"train results", true, false, false}
-   options["tro"] = {"train results", true, false, false}
-   options["trainout"] = {"train results", true, false, false}
-   options["ter"] = {"test results", true, false, false}
-   options["teo"] = {"test results", true, false, false}
-   options["testout"] = {"test results", true, false, false}
-   options["nt"] = {"no train", false}
-   options["notrain"] = {"no train", false}
+   options["tr"] = {"trainFolder", true, false, false}
+   options["train"] = {"trainFolder", true, false, false}
+   options["te"] = {"testFolder", true, false, false}
+   options["test"] = {"testFolder", true, false, false}
+   options["trr"] = {"trainResults", true, false, false}
+   options["tro"] = {"trainResults", true, false, false}
+   options["trainout"] = {"trainResults", true, false, false}
+   options["ter"] = {"testResults", true, false, false}
+   options["teo"] = {"testResults", true, false, false}
+   options["testout"] = {"testResults", true, false, false}
+   options["nt"] = {"noTrain", false}
+   options["notrain"] = {"noTrain", false}
    options["v"] = {"verbose", false}
    options["o"] = {"outputs", true, true, false}
    options["e"] = {"epochs", true, true, false}
-   options["p"] = {"print freq", true, true, false}
-   options["pf"] = {"print freq", true, true, false}
-   options["l"] = {"level count", true, true, false, false}
-   options["lc"] = {"level count", true, true, false, false}
-   options["hu"] = {"HUs", true, true, true}
-   options["hn"] = {"HUs", true, true, true}
-   options["lt"] = {"level types", true, false, true}
+   options["p"] = {"printFreq", true, true, false}
+   options["pf"] = {"printFreq", true, true, false}
+   options["l"] = {"layers", true, true, false, false}
+   options["lc"] = {"layers", true, true, false, false}
+   options["n"] = {"nodes", true, true, true}
+   options["n"] = {"nodes", true, true, true}
+   options["lt"] = {"activationFunctions", true, false, true}
    options["s"] = {"save", true, false, false}
    options["i"] = {"inputs", true, true, false}
 
@@ -47,38 +47,31 @@ function constructDefaults(CLA)
    if CLA["help"] then
       return defaults, CLA
    end
-   if CLA["inputs"] == nil and CLA["train folder"] == nil then
-      CLA["help"] = true
+   if CLA["inputs"] == nil and CLA["trainFolder"] == nil then
+      print("trainFolder is a required variable")
       return defaults, CLA
    end
 
    defaults["outputs"] = 1
-   defaults["no train"] = false
+   defaults["noTrain"] = false
    defaults["verbose"] = false
    defaults["epochs"] = 100
-   defaults["print freq"] = 10
-   if CLA["level count"] == nil then CLA["level count"] = 1 end
-   if CLA["HUs"] == nil then CLA["HUs"] = {} end
-   if CLA["level types"] == nil then CLA["level types"] = {} end
+   defaults["printFreq"] = 10
+   if CLA["layers"] == nil then CLA["layers"] = 1 end
+   if CLA["nodes"] == nil then CLA["nodes"] = {} end
+   if CLA["activationFunctions"] == nil then CLA["activationFunctions"] = {} end
 
-   local index = #(CLA["HUs"])+1
-   while index <= CLA["level count"] do
-      CLA["HUs"][index] = 20
-      index = index + 1
+   if type(CLA["nodes"]) ~= "table" then
+      temp = {}
+      table.insert(temp, CLA["nodes"])
+      CLA["nodes"] = temp
+      temp = {}
+      table.insert(temp, CLA["activationFunctions"])
+      CLA["activationFunctions"] = temp
    end
 
-   index = #(CLA["level types"])+1
-   while index <= CLA["level count"] do
-      CLA["level types"][index] = "t"
-      index = index + 1
-   end
-
-   for i=1,#CLA["level types"] do
-      CLA["level types"][i] = string.lower(CLA["level types"][i])
-   end
-
-   if #(CLA["HUs"]) > CLA["level count"] or #(CLA["level types"]) > CLA["level count"] then
-      CLA["help"] = true
+   if #(CLA["nodes"]) ~= CLA["layers"] or #(CLA["activationFunctions"]) ~= CLA["layers"] then
+      print("The number of nodes and activationFunctions listed must match the number of layers listed")
    end
    
    return defaults, CLA

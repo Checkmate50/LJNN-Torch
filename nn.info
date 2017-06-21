@@ -1,5 +1,25 @@
-layers	2	# The number of layers we want to have
-nodes	10  10	# The number of nodes in each layer (respectively)
-activation_functions	t    t  # The activation function used by each layer
+p############################################
+#           Neural Network Setup           #
+############################################
 
-verbose			False	# Whether or not the training and testing code should print verbosely
+layers	2	 # The number of layers we want to have
+nodes	40 40	 # The number of nodes in each layer (respectively)
+activationFunctions   t t # The activation function used by each layer
+
+############################################
+#     Neural Network Training Options      #
+############################################
+
+
+epochs		500  			# The number of epochs to train this network
+learningRate	.1			# The rate of learning for the learning algorithm
+printFreq	10			# How often to print the network loss
+
+
+############################################
+#          Miscellaneous Options           #
+############################################
+
+save		models/model.net	# The location to save the network
+resultNN	runner/weights.006.data	# The location to write the finished network 
+verbose		False			# Whether or not the training and testing code should print verbosely

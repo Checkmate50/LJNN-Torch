@@ -1,15 +1,22 @@
 ###########################################
+#           Program Run Commands          #
+###########################################
+python	python # Command to run python 2
+torch	th     # Command to run torch
+
+###########################################
 #           General Information           #
 ###########################################
 
 createTT	bin/createTT.py	# Train/Test building file
-createNN	bin/createNN.lua  # nn building file
+createNN	bin/createNN.lua  # nn building file (optional)
 trainNN		bin/trainNN.lua	  # nn training file
 testNN		bin/testNN.lua	  # nn testing file
 translateNN	bin/translateNN.lua	# nn translating file (optional)
 createNewTT	True	# Whether or not we should build new train/test files
+createNewNN	True	# Whether or not we construct a new neural network
 testOnly	False	# If we only want to test the neural network
-noTest		False	# If we don't want to test the neural network after training
+runTests	False	# If we don't want to test the neural network after training
 verbose		True	# Print information from main.py (not called files!)
 
 ###########################################

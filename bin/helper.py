@@ -1,7 +1,7 @@
 """
 A python file with some helpful functions for extracting data defined for importing
 
-Written by @Checkmate
+Written by Dietrich Geisler
 """
 
 
@@ -47,9 +47,18 @@ def reduce_type(item):
 
     
 def combine_dicts(a, b):
-    b = b.copy()
-    for key in a.keys():
-        if not b.has_key(key):
-            b[key] = a[key]
-    return b
+    to_return = a.copy()
+    for key in b.keys():
+        if not to_return.has_key(key):
+            to_return[key] = b[key]
+    return to_return
 
+# Text colors from https://stackoverflow.com/questions/287871/print-in-terminal-with-colors-using-python
+def print_info(s):
+    print('\033[92m' + str(s) + '\033[0m')
+
+def print_warning(s):
+    print('\033[93m' + str(s) + '\033[0m')
+
+def print_error(s):
+    print('\033[91m' + str(s) + '\033[0m')

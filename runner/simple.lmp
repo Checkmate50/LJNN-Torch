@@ -16,10 +16,11 @@ create_atoms 	1 region cryst
 
 mass		1 12 
 
-variable        out equal 100         # frequency of writing thermo quantities to output file
-pair_style 	runner showew no showewsum ${out} maxew 10000 resetew yes dir .
+variable	out equal 100	# frequency of writing thermo quantities to output file
+pair_style	runner showew no showewsum ${out} maxew 10000 resetew yes dir .
 #pair_style 	lj/cut 9
-pair_coeff 	1 1 0.05 3.0 	#solid at 0.05/liquid at 0.25 at 300 K
+pair_coeff	* * 6.350126988  #12 angstrum
+#pair_coeff 	1 1 0.05 3.0 	#solid at 0.05/liquid at 0.25 at 300 K
 pair_modify 	shift yes
 
 velocity 	all create 50.0 ${seed} mom yes rot yes
@@ -29,7 +30,7 @@ thermo_style 	custom step temp pe
 timestep	0.002
 dump		2 all custom 100 first.lammpstrj id type x y z element fx fy fz
 write_dump	all xyz pos.xyz modify element C
-restart 	50000 restart1 restart2
+restart 	500 restart1 restart2
 
-fix 		1 all nvt temp 400.0 400.0 1.0
-run		1000
+fix 		1 all nvt temp 500.0 500.0 1.0
+run		5000

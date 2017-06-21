@@ -1,9 +1,9 @@
 import math
 import random
 import os
-from sys import argv
-from createSymmFuncts import get2Functs, get3Functs
-from helper import get_data, combine_dicts
+import sys
+from createSymmFuncts import SymmFunct2, SymmFunct3
+import helper
 from subprocess import call
 
 
@@ -24,6 +24,8 @@ The train/test files generated via running symmetry functions on the given input
 And the scaling and input information for runner
 Note that, as usual, this input information relies on the on information given in main.info
 So make sure this file is formatted correctly!!
+
+Written by Dietrich Geisler
 """
 
 
@@ -56,7 +58,7 @@ class Atom:
     def checkDim(self, other):
         #Prints dimension warnings as needed
         if len(self.pos) != len(other.pos):
-            print("WARNING: two compared atoms have different position dimensions")
+            helper.print_warning("WARNING: two compared atoms have different position dimensions")
                 
     def __str__(self):
         return str(self.pos)
@@ -64,17 +66,26 @@ class Atom:
     def __repr__(self):
         return self.__str__()
 
+    def __eq__(self, other):
+        if not isinstance(other, Atom):
+            return False
+        return self.pos == other.pos
+
 
 def generateData(lammps_file, seed, runner_scaling):
     """
     Given a lammps_file, seed, and a place to write this information to runner
     Generates the data from the lammps file
     """
-    with open("bin/genCommand.bash", "w") as f:
-        f.write("lammps -echo screen -var seed " + str(seed) + " < " + lammps_file)
-    call(["bash", "bin/genCommand.bash"])
     lammps_filename = lammps_file[(max(lammps_file.rfind("/"), lammps_file.rfind("\\")) + 1):]
     lammps_dir = lammps_file[:(len(lammps_file)-len(lammps_filename))]
+    os.chdir(lammps_dir)
+    with open("runCommand.bash", "w") as f:
+        f.write("lammps -echo screen -var seed " + str(seed) + " < " + lammps_filename)
+    call(["bash", "runCommand.bash"])
+    for i in range(max(lammps_dir.count("/"), lammps_dir.count("\\"))):
+        os.chdir("..")
+    call(["mv", lammps_dir + "runCommand.bash", runner_scaling + "runCommand.bash"])
     lammpstrj = ""
     log = lammps_dir + "log.lammps"
     # Copy lammps file to the runner folder
@@ -82,8 +93,11 @@ def generateData(lammps_file, seed, runner_scaling):
         with open(runner_scaling + lammps_filename, "w") as fo:
             for line in fi:
                 if line.strip().startswith("pair_style"):
-                    fo.write("variable        out equal 100         # frequency of writing thermo quantities to output file\n")
-                    fo.write("pair_style 	runner showew no showewsum ${out} maxew 10000 resetew yes dir .\n")
+                    fo.write("variable\tout equal 100\t# frequency of writing thermo quantities to output file\n")
+                    fo.write("pair_style\trunner showew no showewsum ${out} maxew 10000 resetew yes dir .\n")
+                    line = "#" + line
+                if line.strip().startswith("pair_coeff"):
+                    fo.write("pair_coeff\t* * 6.350126988  #12 angstrum\n")
                     line = "#" + line
                 elif line.strip().startswith("dump"):
                     lammpstrj = lammps_dir + line[:line.find(".lammpstrj")].split()[-1] + ".lammpstrj"
@@ -91,10 +105,25 @@ def generateData(lammps_file, seed, runner_scaling):
                     log = lammps_dir + line.split()[-1]
                 fo.write(line)
     if not lammpstrj:
-        print("ERROR: lammpstrj file not written using dump, cannot proceed")
+        helper.print_error("ERROR: lammpstrj file not written using dump, cannot proceed")
         exit()
     return lammpstrj, log
-    
+
+
+def getSymmFunctions(symmFunctInfo):
+    to_return = []
+    with open(symmFunctInfo, "r") as f:
+        for line in f:
+            sline = list(map(helper.reduce_type, line[:line.find("#")].strip().split()))
+            if len(sline) < 2:
+                continue
+            if sline[0] == 2:
+                to_return.append(SymmFunct2(*sline[1:]))
+            elif sline[0] == 3:
+                to_return.append(SymmFunct3(*sline[1:]))
+            else:
+                helper.print_warning("WARNING: " + str(sline[0]) + " unrecognized symmetry function type")
+    return to_return
     
 def readAtomData(filename):
     """
@@ -104,7 +133,7 @@ def readAtomData(filename):
     """
 
     if not filename.endswith("lammpstrj"):
-        print("WARNING: the atom file " + filename + " is not an apparent lammps trajectory file")
+        helper.print_warning("WARNING: the atom file " + filename + " is not an apparent lammps trajectory file")
     
     f = open(filename, 'r')
     count = 0
@@ -112,6 +141,7 @@ def readAtomData(filename):
     offsets = []
     data = []
     atoms = []
+    ang_to_bohr = 1.88973 # Unit change
     
     for line in f:
         if line.strip() == "ITEM: TIMESTEP":
@@ -127,7 +157,7 @@ def readAtomData(filename):
             
         if count > 8:
             ls = line.split()
-            pos = [float(ls[i+2]) - offsets[i] for i in range(3)]
+            pos = [(float(ls[i+2]) - offsets[i])*ang_to_bohr for i in range(3)]
             atoms.append(Atom(pos))
         count += 1
 
@@ -145,44 +175,59 @@ def readThermoData(filename):
 
     f = open(filename, 'r')
     thermo = []
+    ev_to_hartree = 0.0367493 # Converstion factor
     while f.readline().strip() != "Step Temp PotEng":
         pass
     while 1:
         vals = f.readline().split()
         if len(vals) != 3:
             break
-        thermo.append(float(vals[2]))
+        thermo.append(float(vals[2]) * ev_to_hartree)
         
     f.close()
     return thermo
 
 
-def writeBatch(filename, atoms, box, pe, symmFuncts, info=None):
+def getScalingData(atoms, box, symmFuncts):
     """
-    Given a filename and list of atoms
+    Given a list of atoms
+    Calculates the scaling data for each configuration of atoms
+    And computes the metadata for each symmFunct
+    """
+
+    for i in range(len(atoms)):
+        print("Calculating timestep " + str(i+1))
+        for j in atoms[i]:
+            for funct in symmFuncts:
+                funct.call(j, atoms[i], box)
+    for funct in symmFuncts:
+        funct.set_info()
+
+def writeBatch(filename, count, pe, symmFuncts, metaIndex, scale_min, scale_max):
+    """
+    Given a filename, a number of atoms 'count', scaling and location information
+    And a collection of symmFuncts with calculated metadata from 'getScalingData'
     This function writes the test batch to the given file
     Given an info array (containing 'funct' number of size-4 array elements),
     updates the [sum, count, min, max] values contributed by this batch
     Note that the values written correspond to the symmetry functions of the atoms
+
+    The updated metadata index is also returned for convenience
     """
 
     with open(filename, 'w') as f:
-        for i in atoms:
+        for _ in range(count):
             for funct in xrange(len(symmFuncts)):
-                result = symmFuncts[funct](i=i, atomList=atoms, box=box)
+                result = symmFuncts[funct].scaled(metaIndex, scale_min, scale_max)
                 f.write(str(result) + " ")
-                if info == None:
-                    continue
-                info[0][funct][0] += result
-                info[0][funct][1] += 1
-                info[0][funct][2] = min(info[0][funct][1], result)
-                info[0][funct][3] = max(info[0][funct][2], result)
+            metaIndex += 1
             f.write("\n")
         f.write(str(pe) + "\n")
+    return metaIndex
 
 
 # UPDATE TO SUPPORT MULTIPLE ATOM TYPES
-def writeScaling(symmFuncts, info, pe, atomCount):
+def writeScaling(symmFuncts, info, pe, atomCount, seed, scalingData, nnInfoFile):
     """
     Given an array of symmetry functions 'symmFuncts'
     The results of applying these symmetry functions to each element in 'info'
@@ -193,40 +238,57 @@ def writeScaling(symmFuncts, info, pe, atomCount):
     And identical symmetry function information to both
     "runner/input.nn" and "runner/input.nn.RuNNer++"
 
-    Details on these outputs can be found in "runner_input.txt"
+    Details on these outputs can be found in "runner_input.txt" and "runner_input_template.txt"
     """
 
+    expected = []
+    defaults = {"verbose" : False}
+    data = helper.combine_dicts(scalingData, helper.get_data(nnInfoFile, expected, defaults))
+    if data["layers"] == 1:
+        data["nodes"] = [data["nodes"]]
+        data["activationFunctions"] = [data["activationFunctions"]]
     with open("runner/input.nn", "w") as f:
+        # Write Settings
+        with open("bin/scalingBasics.txt", "r") as fi:
+            for line in fi:
+                f.write(line)
+        f.write("number_of_elements\t1\t# number of elements\n")
+        f.write("elements\tC\t# specification of elements\n")
+        f.write("random_seed\t" + str(seed) + "\t# seed for initial random weight parameters and train/test splitting\n")
+        f.write("cutoff_type\t2\t# type of cutoff function\n")
+        f.write("global_hidden_layers_short\t" + str(data["layers"]) + "\t# number of hidden layers\n")
+        f.write("global_nodes_short\t" + " ".join(map(str, data["nodes"])) + "\t# number of nodes in hidden layers\n")
+        f.write("global_activation_short\t" + " ".join(map(str, data["activationFunctions"])) + " l\t# The activation function used by each layer\n")
+        f.write("test_fraction\t" + str(1 - data["trainRatio"]) + "\t# threshold for splitting between fitting and test set\n")
+        f.write("scale_min_short\t" + str(data["scaleMin"]) + "\t# minimum value for scaling\n")
+        f.write("scale_max_short\t" + str(data["scaleMax"]) + "\t# maximum value for scaling\n")
+        f.write("\n")
+        
         for funct in symmFuncts:
-            k = funct.keywords
-            f.write("symfunction_short C 2 C ")
-            f.write(str(k['eta']) + " " + str(k['Rs']) + " " +  str(k['Rc']))
-            f.write("\n")
+            f.write(str(funct) + "\n")
 
-    os.system("cp runner/input.nn runner/input.nn.RuNNer++")
+    call(["cp", "runner/input.nn", "runner/input.nn.RuNNer++"])
     
     with open("runner/scaling.data", "w") as f:
-        for i in range(len(info)):
-            for j in range(len(info[i])):
-                funct = info[i][j]
+        # Write Scaling Information
+        count = 0
+        for i in range(1):
+            for j in range(len(symmFuncts)):
                 f.write(str(i + 1) + " ")
                 f.write(str(j + 1) + " ")
-                f.write(str(funct[2]) + " " + str(funct[3]) + " " + str(funct[0]/funct[1]))
+                f.write(symmFuncts[j].data_info())
                 f.write("\n")
         f.write(str(sum(pe)/len(pe)/atomCount) + " " + str((max(pe)-min(pe))/atomCount))
         
                 
 def main():
-    if len(argv) < 3:
-        print("Give the train/test and symmetry function information files")
+    if len(sys.argv) < 4:
+        print("Give the train/test, symmetry function, and neural network information files")
         return
     # Acquire and read data
     expected = ["trainFolder", "testFolder"]
     defaults = {"generateData" : True, "trainRatio" : 0.9, "runnerScaling" : "../runner/", "verbose" : False}
-    data = get_data(argv[1], expected, defaults)
-    expected = []
-    defaults = {}
-    data = combine_dicts(data, get_data(argv[2], expected, defaults))
+    data = helper.get_data(sys.argv[1], expected, defaults)
     verbose = data["verbose"]
     if data["generateData"]:
         print("Generating lammps data")
@@ -242,9 +304,9 @@ def main():
         seed = data["seed"]
         lammpstrj = data["lammpstrj"]
         log = data["log"]
-    print("Reading atomic data")
+    print("Reading atomic data from " + lammpstrj)
     atomData, box = readAtomData(lammpstrj)
-    print("Reading thermodynamic data")
+    print("Reading thermodynamic data from " + log)
     thermoData = readThermoData(log)
     print("Shuffling data")
     z = list(zip(atomData, thermoData))
@@ -252,42 +314,68 @@ def main():
     atomData, thermoData = zip(*z)
 
     #Get Functions
-    functs2 = []
-    functs3 = []
+    functs = getSymmFunctions(sys.argv[2])
+    """functs = []
+    # UPDATEEEEEEE
+    if isinstance(data["2functions"], list):
+        c_temp = ["C" for _ in range(len(data["2functions"]))]
+    else:
+        c_temp = "C"
     if data.has_key("2functions"):
-        functs2 = get2Functs(data["2functions"], data["2Rc"], data["2sigma"], data["2count"])
+        functs += get2Functs(data["2functions"], c_temp, c_temp, data["2Rc"], data["2eta"], data["2Rs"])
     if data.has_key("3functions"):
-        functs2 = get3Functs(data["3functions"], data["3Rc"], data["3sigma"], data["3count"])
-
-    #Sort functions as required by runner
-    k2 = lambda x : (x.keywords['Rc'], x.keywords['eta'], x.keywords['Rs'])
-    functs2.sort(key=k2)
-    k3 = lambda x : (x.keywords['Rc'], x.keywords['eta'],
-                     x.keywords['zeta'], x.keywords['lambda'], x.keywords['Rs'])
-    functs3.sort(key=k3)
-
-    functs = functs2 + functs3
+        functs += get3Functs(data["3functions"], c_temp, c_temp, c_temp, data["3Rc"], data["3sigma"], data["3count"])"""
+    functs.sort()
     
     # Write train and test files
     trainFolder = data["trainFolder"]
     testFolder = data["testFolder"]
     trainRatio = data["trainRatio"]
-    trainCutoff = int(trainRatio * len(atomData))
+    trainCutoff = int(trainRatio * len(atomData)) + 1
     i = 0
-    if (verbose):
-        print("Writing " + str(trainCutoff) + " training files and " + str(len(atomData)-trainCutoff) + " testing files")
+
+    should_delete = raw_input("Cleaning (deleting all files) from " + data["trainFolder"] + "  Type 'yes' to confirm:\n")
+    if should_delete == "yes":
+        # Stolen from: https://stackoverflow.com/questions/185936/delete-folder-contents-in-python
+        folder = data["trainFolder"]
+        for the_file in os.listdir(folder):
+            file_path = os.path.join(folder, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(e)
+    should_delete2 = raw_input("Cleaning (deleting all files) from " + data["testFolder"] + "  Type 'yes' to confirm:\n")
+    if should_delete2 == "yes":
+        folder = data["testFolder"]
+        for the_file in os.listdir(folder):
+            file_path = os.path.join(folder, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(e)
+
+    print("Calculating scaling metadata for " + str(len(atomData)) + " timesteps")
+    getScalingData(atomData, box, functs)
+    print("Writing " + str(trainCutoff) + " training files and " + str(len(atomData)-trainCutoff) + " testing files")
     info = [list([[0, 0, int(1e10), int(-1e10)] for _ in range(len(functs))])]
+    metaIndex = 0
+    scale_min = data["scaleMin"]
+    scale_max = data["scaleMax"]
     while i < trainCutoff:
-        print("Writing Training Batch: " + str(i+1))
-        writeBatch(trainFolder + str(i+1) + ".nndata", atomData[i], box, thermoData[i], functs, info)
+        if verbose:
+            print("Writing Training Batch: " + str(i+1))
+        metaIndex = writeBatch(trainFolder + str(i+1) + ".nndata", len(atomData[i]), thermoData[i], functs, metaIndex, scale_min, scale_max)
         i += 1
     while i < len(atomData):
-        print("Writing Test Batch: " + str(i+1-trainCutoff))
-        writeBatch(testFolder + str(i+1-trainCutoff) + ".nndata", atomData[i], box, thermoData[i], functs)
+        if verbose:
+            print("Writing Test Batch: " + str(i+1-trainCutoff))
+        metaIndex = writeBatch(testFolder + str(i+1-trainCutoff) + ".nndata", len(atomData[i]), thermoData[i], functs, metaIndex, scale_min, scale_max)
         i += 1
 
     print("Writing function information to scaling.data")
-    writeScaling(functs, info, thermoData, len(atomData[0]))
+    writeScaling(functs, info, thermoData, len(atomData[0]), seed, data, sys.argv[3])
     
             
 def countInCutoff(atoms, cutoff):

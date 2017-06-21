@@ -1,4 +1,4 @@
-require 'nn'
+require 'bin/nnTrainFiles/nnReqs'
 
 function printTensor(t)
    if t==nil then
@@ -15,17 +15,36 @@ function printTensor(t)
       end
    end
 end
-   
-if arg[1] == nil or arg[2] == nil then
-   io.write("Provide a model and destination file")
-end
 
-model = torch.load(arg[1])
-io.output(arg[2])
+local modelLocation
+local writeLocation
+local shouldWriteRunner = false
+
+if arg[1] == '-CLA' then
+   if arg[1] == nil or arg[2] == nil then
+      io.write("Provide a model and destination file\n")
+   end
+
+   modelLocation = arg[1]
+   writeLocation = arg[2]
+else
+   options = {}
+   CLA = readCLA(arg, options)
+   modelLocation = CLA['save']
+   -- UPDATE POTENTIALLY
+   writeLocation = CLA['resultNN']
+   shouldWriteRunner = true
+end
+local model = torch.load(modelLocation)
+io.output(writeLocation)
 
 for i=1,#model.modules do
-   printTensor(model.modules[i].weight)
+   if model.modules[i].weight == nil then
+      goto continue
+   end
+   printTensor(model.modules[i].weight:t())
    printTensor(model.modules[i].bias)
+   ::continue::
 end
 
 io.output(io.stdout)

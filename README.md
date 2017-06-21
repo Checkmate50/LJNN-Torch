@@ -66,6 +66,6 @@ Nathan Fox for helping me work through RuNNer and design the framework
 
 Michael Grunwald for being an awesome advisor
 
-Andrejs ... for making the RuNNer++ framework
+Andreas Singraber for making the RuNNer++ framework
 
 Hope this code helps you out, good luck!  Let me know via github if you have any issues; I'm planning to maintain this code at least until 2020.

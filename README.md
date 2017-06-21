@@ -2,8 +2,10 @@
 
 This framework allows for the generation of data for training a feed-forward neural network which can be used for extending MD simulations.
 
-Home Github: 
+Home Github: https://github.com/Checkmate50/LJNN-Torch
+
 Written by Dietrich Geisler
+
 Last Updated 6/21/2017
 
 ###########################################
@@ -26,9 +28,13 @@ If using the torch library for neural network training, install lua and torch an
 The following info files contain modifiable information that is needed by the framework when making decisions:
 
 main.info
+
 tt.info
+
 symmFuncts.info
+
 nn.info
+
 
 You can change the values in these files to change the behavior of simulations or add your own modules (see the section on adding modules for details on performing the latter).  The data field is on the left and the data is a series of whitespace delimited values on the right.  Comments are preceeded with a '#'.  Data fields are not case-sensitive.
 
@@ -45,8 +51,11 @@ If you want to add expected/required data fields, modify bin/verifyInfo.py direc
 WARNING: Do not delete the following files unless you know what you're doing!  You may need to use or update these files if you want to add features or support for things, just don't change/delete exisiting code if you can help it.
 
 main.py
+
 bin/helper.py
+
 bin/updateNN.py
+
 bin/verifyInfo.py
 
 ###########################################
@@ -54,7 +63,9 @@ bin/verifyInfo.py
 ###########################################
 
 Nathan Fox for helping me work through RuNNer and design the framework
+
 Michael Grunwald for being an awesome advisor
+
 Andrejs ... for making the RuNNer++ framework
 
 Hope this code helps you out, good luck!  Let me know via github if you have any issues; I'm planning to maintain this code at least until 2020.

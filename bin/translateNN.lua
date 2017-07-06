@@ -32,7 +32,7 @@ else
    CLA = readCLA(arg, options)
    modelLocation = CLA['save']
    -- UPDATE POTENTIALLY
-   writeLocation = CLA['resultNN']
+   writeLocation = CLA['resultnn']
    shouldWriteRunner = true
 end
 local model = torch.load(modelLocation)

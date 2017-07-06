@@ -1,0 +1,7 @@
+#2-body functions
+#2 g f atom_from atom_to eta Rs Rc
+2 2 2 C C 0.5 4 12
+2 2 2 C C 0.5 5 12
+2 2 2 C C 0.5 6 12
+2 2 2 C C 0.5 7 12
+2 2 2 C C 0.5 8 12

@@ -7,15 +7,15 @@ function constructCLAOptions()
    options = {}
 
    options["h"] = {"help", false}
-   options["trr"] = {"trainResults", true, false, false}
-   options["tro"] = {"trainResults", true, false, false}
-   options["trainout"] = {"trainResults", true, false, false}
+   options["trr"] = {"trainresults", true, false, false}
+   options["tro"] = {"trainresults", true, false, false}
+   options["trainout"] = {"trainresults", true, false, false}
    options["v"] = {"verbose", false}
    options["o"] = {"outputs", true, true, false}
    options["e"] = {"epochs", true, true, false}
-   options["lr"] = {"learningRate", true, true, false}
-   options["p"] = {"printFreq", true, true, false}
-   options["pf"] = {"printFreq", true, true, false}
+   options["lr"] = {"learningrate", true, true, false}
+   options["p"] = {"printfreq", true, true, false}
+   options["pf"] = {"printfreq", true, true, false}
    options["s"] = {"save", true, false, false}
 
    return options
@@ -36,9 +36,13 @@ function constructDefaults(CLA)
 
    defaults["outputs"] = 1
    defaults["verbose"] = false
-   defaults["learningRate"] = .01
+   defaults["criterion"] = "mse"
+   defaults["learningrate"] = .01
+   defaults["learningratedecay"] = 0
+   defaults["weightdecay"] = 0
+   defaults["momentum"] = 0
    defaults["epochs"] = 100
-   defaults["printFreq"] = 10
+   defaults["printfreq"] = 10
    
    return defaults, CLA
 end

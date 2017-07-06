@@ -3,5 +3,5 @@
 ########################
 runner_mode                            1                   # 1=calculate symmetry functions, 2=fitting mode, 3=prediction mode
 #normalize_nodes                                            # normalize input of nodes
-#scale_symmetry_functions                                   # scale symmetry functions
+scale_symmetry_functions                                   # scale symmetry functions
 #center_symmetry_functions                                  # remove center of mass of structure function values

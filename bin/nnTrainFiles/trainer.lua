@@ -21,22 +21,21 @@ function splitTensor(t, count)
    return results
 end
 
-function trainNN(model, batchInputs, batchLabels, epochs, lr, ofilepath, verbose, printFreq)
+function trainNN(model, batchInputs, batchLabels, epochs, criterion, optimState, ofilepath, verbose, printFreq)
    --[[
       Given a neural network 'model' with:
       A series of training inputs 'batchInputs' with i column Tensors,
       A series of associated outputs 'batchLabels' with o column Tensors,
       A number of epochs 'epochs' to train over,
-      A learning rate 'lr'
+      A criterion 'criterion'
+      An optimizer state information block 'optimState'
       Whether or not training should be 'verbose',
       The file to write to 'ofilepath' (if this is nil, writes to console)
       And a frequency at which to print model state
       This function trains and returns nn
    ]]
    
-   local criterion = nn.MSECriterion()
    local params, gradParams = model:getParameters()
-   local optimState = {learningRate = lr}
    if ofilepath ~= nil then
       io.output(ofilepath)
    end
@@ -48,11 +47,14 @@ function trainNN(model, batchInputs, batchLabels, epochs, lr, ofilepath, verbose
 	 local function feval(params)
 	    gradParams:zero()
 	    local outputs = model:forward(batchInputs[batch])
-	    local split_labels = splitTensor(batchLabels[batch], (#batchInputs[batch])[1])
-	    local loss = criterion:forward(outputs, split_labels)
-	    local dloss_doutput = criterion:backward(outputs, split_labels)
-	    model:backward(batchInputs[batch], dloss_doutput)
-
+	    local computed = sumTensor(outputs)
+	    local loss = criterion:forward(computed, batchLabels[batch])
+	    local dloss_doutput = criterion:backward(computed, batchLabels[batch])
+	    local t = torch.Tensor((#batchInputs[batch])[1], 1)
+	    for i=1,(#t)[1] do
+	       t[i] = dloss_doutput / (#batchInputs[1])[1]
+	    end
+	    model:backward(batchInputs[batch], t)
 	    return loss, gradParams
 	 end
 
@@ -108,4 +110,3 @@ function testNN(model, testInputs, testLabels, ofilepath, verbose)
 
    io.output(io.stdout)
 end
-

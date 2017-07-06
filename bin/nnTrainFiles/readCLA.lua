@@ -117,9 +117,9 @@ function readFromFile(filename)
       index = toAdd[1]
       table.remove(toAdd, 1)
       if #toAdd == 1 then
-	 toReturn[index] = toAdd[1]
+	 toReturn[string.lower(index)] = toAdd[1]
       else
-	 toReturn[index] = toAdd
+	 toReturn[string.lower(index)] = toAdd
       end
       ::continue::
    end

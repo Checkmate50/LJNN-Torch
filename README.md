@@ -35,12 +35,9 @@ symmFuncts.info
 
 nn.info
 
-
 You can change the values in these files to change the behavior of simulations or add your own modules (see the section on adding modules for details on performing the latter).  The data field is on the left and the data is a series of whitespace delimited values on the right.  Comments are preceeded with a '#'.  Data fields are not case-sensitive.
 
 Data fields that are not recognized by bin/verifyInfo.py give a warning if they are added.  Missing data fields give an error and quit the framework if they are required.  If verbosity is enabled, optional data fields give a notification if they are empty.  Data fields with the incorrect data type give an error and quit the framework.
-
-The info files may be updated by software to match expected case, so make sure they aren't write-protected to avoid unexpected behavior
 
 If you want to add expected/required data fields, modify bin/verifyInfo.py directly (see the code documentation on how to do so).
 
@@ -55,8 +52,6 @@ main.py
 bin/helper.py
 
 bin/updateNN.py
-
-bin/verifyInfo.py
 
 ###########################################
 #            Acknowledgemenets            #

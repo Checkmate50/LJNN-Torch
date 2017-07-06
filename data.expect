@@ -1,0 +1,50 @@
+# Expected data values.  Don't modify lines ending with ':'
+# dataField	optional/required
+
+mainInfo:
+python		r
+torch		r
+createTT	r
+createNewTT	o
+createNN	o
+createNewNN	o
+trainNN		o
+testNN		o
+translateNN	r
+testOnly	o
+runTests	o
+verbose		o
+expectInfo	r
+ttInfo		r
+symmInfo	r
+nnInfo		r
+
+ttInfo:
+lammpsFile	o
+seedRange	o
+generateData	o
+lammpstrj	o
+log		o
+seed		o
+trainFolder	r
+testFolder	r
+trainRatio	r
+runnerScaling	r
+verbose		o
+scaleMin	o
+scaleMax	o
+
+nnInfo:
+layers			r
+nodes			r
+activationFunctions	r
+epochs			o
+criterion		o
+learningRate		o
+learningRateDecay	o
+weightDecay		o
+momentum		o
+printFreq		o
+save			r
+resultNN		o
+verbose			o

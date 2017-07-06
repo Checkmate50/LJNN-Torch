@@ -31,9 +31,8 @@ class SymmFunct2:
         datamin = self.info[0]
         datamax = self.info[1]
         value = self.data[index]
-        return value
         # To confirm this function:  https://stackoverflow.com/questions/5294955/how-to-scale-down-a-range-of-numbers-with-a-known-min-and-max-value
-        # return ((scale_max-scale_min)*(value-datamin)/(datamax-datamin)) + scale_min
+        return ((scale_max-scale_min)*(value-datamin)/(datamax-datamin)) + scale_min
 
     def data_info(self):
         return " ".join(map(str, self.info))

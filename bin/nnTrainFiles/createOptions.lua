@@ -7,28 +7,28 @@ function constructCLAOptions()
    options = {}
 
    options["h"] = {"help", false}
-   options["tr"] = {"trainFolder", true, false, false}
-   options["train"] = {"trainFolder", true, false, false}
-   options["te"] = {"testFolder", true, false, false}
-   options["test"] = {"testFolder", true, false, false}
-   options["trr"] = {"trainResults", true, false, false}
-   options["tro"] = {"trainResults", true, false, false}
-   options["trainout"] = {"trainResults", true, false, false}
-   options["ter"] = {"testResults", true, false, false}
-   options["teo"] = {"testResults", true, false, false}
-   options["testout"] = {"testResults", true, false, false}
-   options["nt"] = {"noTrain", false}
-   options["notrain"] = {"noTrain", false}
+   options["tr"] = {"trainfolder", true, false, false}
+   options["train"] = {"trainfolder", true, false, false}
+   options["te"] = {"testfolder", true, false, false}
+   options["test"] = {"testfolder", true, false, false}
+   options["trr"] = {"trainresults", true, false, false}
+   options["tro"] = {"trainresults", true, false, false}
+   options["trainout"] = {"trainresults", true, false, false}
+   options["ter"] = {"testresults", true, false, false}
+   options["teo"] = {"testresults", true, false, false}
+   options["testout"] = {"testresults", true, false, false}
+   options["nt"] = {"notrain", false}
+   options["notrain"] = {"notrain", false}
    options["v"] = {"verbose", false}
    options["o"] = {"outputs", true, true, false}
    options["e"] = {"epochs", true, true, false}
-   options["p"] = {"printFreq", true, true, false}
-   options["pf"] = {"printFreq", true, true, false}
+   options["p"] = {"printfreq", true, true, false}
+   options["pf"] = {"printfreq", true, true, false}
    options["l"] = {"layers", true, true, false, false}
    options["lc"] = {"layers", true, true, false, false}
    options["n"] = {"nodes", true, true, true}
    options["n"] = {"nodes", true, true, true}
-   options["lt"] = {"activationFunctions", true, false, true}
+   options["lt"] = {"activationfunctions", true, false, true}
    options["s"] = {"save", true, false, false}
    options["i"] = {"inputs", true, true, false}
 
@@ -47,30 +47,30 @@ function constructDefaults(CLA)
    if CLA["help"] then
       return defaults, CLA
    end
-   if CLA["inputs"] == nil and CLA["trainFolder"] == nil then
-      print("trainFolder is a required variable")
+   if CLA["inputs"] == nil and CLA["trainfolder"] == nil then
+      print("trainfolder is a required variable")
       return defaults, CLA
    end
 
    defaults["outputs"] = 1
-   defaults["noTrain"] = false
+   defaults["norrain"] = false
    defaults["verbose"] = false
    defaults["epochs"] = 100
-   defaults["printFreq"] = 10
+   defaults["printfreq"] = 10
    if CLA["layers"] == nil then CLA["layers"] = 1 end
    if CLA["nodes"] == nil then CLA["nodes"] = {} end
-   if CLA["activationFunctions"] == nil then CLA["activationFunctions"] = {} end
+   if CLA["activationfunctions"] == nil then CLA["activationfunctions"] = {} end
 
    if type(CLA["nodes"]) ~= "table" then
       temp = {}
       table.insert(temp, CLA["nodes"])
       CLA["nodes"] = temp
       temp = {}
-      table.insert(temp, CLA["activationFunctions"])
-      CLA["activationFunctions"] = temp
+      table.insert(temp, CLA["activationfunctions"])
+      CLA["activationfunctions"] = temp
    end
 
-   if #(CLA["nodes"]) ~= CLA["layers"] or #(CLA["activationFunctions"]) ~= CLA["layers"] then
+   if #(CLA["nodes"]) ~= CLA["layers"] or #(CLA["activationfunctions"]) ~= CLA["layers"] then
       print("The number of nodes and activationFunctions listed must match the number of layers listed")
    end
    

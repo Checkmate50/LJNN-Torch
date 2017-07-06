@@ -16,11 +16,11 @@ if arg[1] == "-CLA" then
    CLA = readCLA(newArgs, options) --CLA = Command Line Arguments
 else
    CLA = readCLA(arg, options)
-   if CLA["trainFolder"] == nil or CLA["save"] == nil then
+   if CLA["trainfolder"] == nil or CLA["save"] == nil then
       print("Must give a train folder and save location in nn.info")
       return
    end
-   testFolder = CLA["testFolder"]
+   testFolder = CLA["testfolder"]
    loadLocation = CLA["save"]
 end
 
@@ -33,7 +33,7 @@ if CLA["help"] then
 end
 
 local outputs = CLA["outputs"]
-local testResults = CLA["testResults"]
+local testResults = CLA["testresults"]
 local verbose = CLA["verbose"]
 
 local model = torch.load(loadLocation)

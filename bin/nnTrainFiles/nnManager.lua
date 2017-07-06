@@ -28,7 +28,7 @@ function getLinearNN(inputs, outputs, nodes, activationFunctions)
    return model
 end
 
-function train(model, inputs, batchFolder, epochs, learningRate, ofilepath, verbose, printFreq)
+function train(model, inputs, batchFolder, epochs, criterion, optimState, ofilepath, verbose, printFreq)
    --Retrieves the batches from the given folder and trains the given model using the given information
    --Returns the model after testing is completed
 
@@ -36,7 +36,7 @@ function train(model, inputs, batchFolder, epochs, learningRate, ofilepath, verb
       return model, false
    end
    local batchInputs, batchLabels = getBatchTensors(batchFolder, inputs)
-   model = trainNN(model, batchInputs, batchLabels, epochs, learningRate, ofilepath, verbose, printFreq)
+   model = trainNN(model, batchInputs, batchLabels, epochs, criterion, optimState, ofilepath, verbose, printFreq)
    return model, true
 end
 

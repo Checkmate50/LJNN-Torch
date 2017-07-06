@@ -23,6 +23,7 @@ verbose		True	# Print information from main.py (not called files!)
 #           Info File Locations           #
 ###########################################
 
+expectInfo	data.expect	# Information for verifying incoming data
 ttInfo		tt.info		# Information for managing train/test files
-symmInfo	symmFuncts.info	# Information on our symmetry functions
+symmInfo	symm.functs	# Information on our symmetry functions
 nnInfo		nn.info		# Information about our neural network

@@ -2,17 +2,21 @@ p############################################
 #           Neural Network Setup           #
 ############################################
 
-layers	2	 # The number of layers we want to have
-nodes	40 40	 # The number of nodes in each layer (respectively)
-activationFunctions   t t # The activation function used by each layer
+layers	1	 # The number of layers we want to have
+nodes	20	 # The number of nodes in each layer (respectively)
+activationFunctions   t # The activation function used by each layer
 
 ############################################
 #     Neural Network Training Options      #
 ############################################
 
 
-epochs		500  			# The number of epochs to train this network
-learningRate	.1			# The rate of learning for the learning algorithm
+epochs		200  			# The number of epochs to train this network
+criterion	mse			# The loss criterion to use
+learningRate	.002			# The rate of learning for the learning algorithm
+learningRateDecay .001			# Hyperparameter
+weightDecay	  0			# Hyperparameter
+momentum	  0			# Hyperparameter
 printFreq	10			# How often to print the network loss
 
 

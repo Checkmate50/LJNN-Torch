@@ -241,12 +241,11 @@ def writeScaling(symmFuncts, info, pe, atomCount, seed, scalingData, nnInfoFile)
     Details on these outputs can be found in "runner_input.txt" and "runner_input_template.txt"
     """
 
-    expected = []
     defaults = {"verbose" : False}
-    data = helper.combine_dicts(scalingData, helper.get_data(nnInfoFile, expected, defaults))
+    data = helper.combine_dicts(scalingData, helper.get_data(nnInfoFile, defaults))
     if data["layers"] == 1:
         data["nodes"] = [data["nodes"]]
-        data["activationFunctions"] = [data["activationFunctions"]]
+        data["activationfunctions"] = [data["activationfunctions"]]
     with open("runner/input.nn", "w") as f:
         # Write Settings
         with open("bin/scalingBasics.txt", "r") as fi:
@@ -258,10 +257,10 @@ def writeScaling(symmFuncts, info, pe, atomCount, seed, scalingData, nnInfoFile)
         f.write("cutoff_type\t2\t# type of cutoff function\n")
         f.write("global_hidden_layers_short\t" + str(data["layers"]) + "\t# number of hidden layers\n")
         f.write("global_nodes_short\t" + " ".join(map(str, data["nodes"])) + "\t# number of nodes in hidden layers\n")
-        f.write("global_activation_short\t" + " ".join(map(str, data["activationFunctions"])) + " l\t# The activation function used by each layer\n")
-        f.write("test_fraction\t" + str(1 - data["trainRatio"]) + "\t# threshold for splitting between fitting and test set\n")
-        f.write("scale_min_short\t" + str(data["scaleMin"]) + "\t# minimum value for scaling\n")
-        f.write("scale_max_short\t" + str(data["scaleMax"]) + "\t# maximum value for scaling\n")
+        f.write("global_activation_short\t" + " ".join(map(str, data["activationfunctions"])) + " l\t# The activation function used by each layer\n")
+        f.write("test_fraction\t" + str(1 - data["trainratio"]) + "\t# threshold for splitting between fitting and test set\n")
+        f.write("scale_min_short\t" + str(data["scalemin"]) + "\t# minimum value for scaling\n")
+        f.write("scale_max_short\t" + str(data["scalemax"]) + "\t# maximum value for scaling\n")
         f.write("\n")
         
         for funct in symmFuncts:
@@ -286,17 +285,16 @@ def main():
         print("Give the train/test, symmetry function, and neural network information files")
         return
     # Acquire and read data
-    expected = ["trainFolder", "testFolder"]
     defaults = {"generateData" : True, "trainRatio" : 0.9, "runnerScaling" : "../runner/", "verbose" : False}
-    data = helper.get_data(sys.argv[1], expected, defaults)
+    data = helper.get_data(sys.argv[1], defaults)
     verbose = data["verbose"]
     if data["generateData"]:
         print("Generating lammps data")
-        if not (data.has_key("lammpsFile") and data.has_key("seedRange")):
+        if not (data.has_key("lammpsfile") and data.has_key("seedrange")):
             print("Give a lammpsFile and seedRange if you want to generate data")
             return
-        seed = random.randint(data["seedRange"][0], data["seedRange"][1])
-        lammpstrj, log = generateData(data["lammpsFile"], seed, data["runnerScaling"])
+        seed = random.randint(data["seedrange"][0], data["seedrange"][1])
+        lammpstrj, log = generateData(data["lammpsfile"], seed, data["runnerscaling"])
     else:
         if not (data.has_key("lammpstrj") and data.has_key("log") and data.has_key("seed")):
             print("Give a lammpstrj location, log location, and seed if you don't want to generate data")
@@ -328,16 +326,16 @@ def main():
     functs.sort()
     
     # Write train and test files
-    trainFolder = data["trainFolder"]
-    testFolder = data["testFolder"]
-    trainRatio = data["trainRatio"]
+    trainFolder = data["trainfolder"]
+    testFolder = data["testfolder"]
+    trainRatio = data["trainratio"]
     trainCutoff = int(trainRatio * len(atomData)) + 1
     i = 0
 
-    should_delete = raw_input("Cleaning (deleting all files) from " + data["trainFolder"] + "  Type 'yes' to confirm:\n")
+    should_delete = raw_input("Cleaning (deleting all files) from " + data["trainfolder"] + "  Type 'yes' to confirm:\n")
     if should_delete == "yes":
         # Stolen from: https://stackoverflow.com/questions/185936/delete-folder-contents-in-python
-        folder = data["trainFolder"]
+        folder = data["trainfolder"]
         for the_file in os.listdir(folder):
             file_path = os.path.join(folder, the_file)
             try:
@@ -345,9 +343,9 @@ def main():
                     os.unlink(file_path)
             except Exception as e:
                 print(e)
-    should_delete2 = raw_input("Cleaning (deleting all files) from " + data["testFolder"] + "  Type 'yes' to confirm:\n")
+    should_delete2 = raw_input("Cleaning (deleting all files) from " + data["testfolder"] + "  Type 'yes' to confirm:\n")
     if should_delete2 == "yes":
-        folder = data["testFolder"]
+        folder = data["testfolder"]
         for the_file in os.listdir(folder):
             file_path = os.path.join(folder, the_file)
             try:
@@ -361,8 +359,8 @@ def main():
     print("Writing " + str(trainCutoff) + " training files and " + str(len(atomData)-trainCutoff) + " testing files")
     info = [list([[0, 0, int(1e10), int(-1e10)] for _ in range(len(functs))])]
     metaIndex = 0
-    scale_min = data["scaleMin"]
-    scale_max = data["scaleMax"]
+    scale_min = data["scalemin"]
+    scale_max = data["scalemax"]
     while i < trainCutoff:
         if verbose:
             print("Writing Training Batch: " + str(i+1))

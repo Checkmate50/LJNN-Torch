@@ -16,11 +16,11 @@ if arg[1] == "-CLA" then
    CLA = readCLA(newArgs, options) --CLA = Command Line Arguments
 else
    CLA = readCLA(arg, options)
-   if CLA["trainFolder"] == nil or CLA["save"] == nil then
+   if CLA["trainfolder"] == nil or CLA["save"] == nil then
       print("Must give a train folder and save location in nn.info")
       return
    end
-   trainFolder = CLA["trainFolder"]
+   trainFolder = CLA["trainfolder"]
    loadLocation = CLA["save"]
 end
 
@@ -31,21 +31,31 @@ CLA = addDefaults(CLA, defaults)
 if CLA["help"] then
    help()
 end
-
 local outputs = CLA["outputs"]
-local trainResults = CLA["trainTesults"]
-local testResults = CLA["testResults"]
+local trainResults = CLA["trainresults"]
+local testResults = CLA["testresults"]
 local verbose = CLA["verbose"]
 local epochs = CLA["epochs"]
-local learningRate = CLA["learningRate"]
-local printFreq = CLA["printFreq"]
+local criterion = CLA["criterion"]
+local lr = CLA["learningrate"]
+local lrd = CLA["learningratedecay"]
+local wd = CLA["weightdecay"]
+local m = CLA["momentum"]
+local printFreq = CLA["printfreq"]
 local saveLocation = CLA["save"]
+
+if criterion == "mse" then
+   criterion = nn.MSECriterion()
+else
+   io.write("Error, unknown criterion")
+   os.exit(1)
+end
+optimState = {learningRate = lr, learningRateDecay = lrd, weightDecay = wd, momentum = m}
 
 local model = torch.load(loadLocation)
 
 inputs = inferInputs(trainFolder, outputs)
-
-model = train(model, inputs, trainFolder, epochs, learningRate, trainResults, verbose, printFreq)
+model = train(model, inputs, trainFolder, epochs, criterion, optimState, trainResults, verbose, printFreq)
 
 if saveLocation == nil then
    saveLocation = loadLocation

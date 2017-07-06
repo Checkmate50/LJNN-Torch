@@ -5,7 +5,7 @@ Written by Dietrich Geisler
 """
 
 
-def get_data(filename, expected = [], defaults = dict()):
+def get_data(filename, defaults):
     """
     Given a string filename,
     A list of data lines we expect to obtain,
@@ -20,12 +20,10 @@ def get_data(filename, expected = [], defaults = dict()):
             sline = line[:line.find("#")].strip().split()
             if len(sline) < 2:
                 continue
-            data[sline[0]] = map(reduce_type, sline[1:])
-            if len(data[sline[0]]) == 1:
-                data[sline[0]] = data[sline[0]][0]
-    for expect in expected:
-        if not data.has_key(expect):
-            raise ValueError("Expected the " + expect + " data value")
+            key = sline[0].lower()
+            data[key] = map(reduce_type, sline[1:])
+            if len(data[key]) == 1:
+                data[key] = data[key][0]
     return data
 
 

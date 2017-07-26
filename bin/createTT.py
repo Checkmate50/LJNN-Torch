@@ -1,3 +1,4 @@
+#!/usr/local/bin/python
 import math
 import random
 import os
@@ -5,7 +6,7 @@ import sys
 from createSymmFuncts import SymmFunct2, SymmFunct3
 import helper
 from subprocess import call
-
+import numpy as np
 
 """
 This script creates the training and testing files for training and neural network from lammps data.  If generateData is True, this script first generates this data before writing the appropriate files.
@@ -28,15 +29,22 @@ So make sure this file is formatted correctly!!
 Written by Dietrich Geisler
 """
 
+class Box:
+    def __init__(self,basis):
+        self.x_y_tilt = basis[1][0]/basis[1][1];
+        self.x_z_tilt = (basis[1][0]*basis[2][0]-basis[1][1]*basis[2][0])/(basis[1][1]*basis[2][2]);
+        self.y_z_tilt = basis[2][1]/basis[2][2];
+        self.basis=basis
 
 class Atom:
     def __init__(self, pos):
         #Note that the box and atom are translated so that the box originates at (0, 0, 0)
         self.pos = pos
 
-    def calcDist(self, other, box):
+    def calcDistOrtho(self, other, box):
         """
-        Figures out the closest 'version' of the other atom assuming the box approximation
+        Figures out the closest 'version' of the other atom assuming an orthorhombic
+                box (so basically useless!!!)
         Returns the symmetry function result associated with this closest version
         """
         
@@ -54,6 +62,43 @@ class Atom:
             diffs[i] += box[i]  #return to original
 
         return min(r_vals)
+        
+        def calcDist(self,other,box):
+            """
+            Does the former function properly for anything
+            """
+            if(isinstance(box,list)):
+                if(len(box) == 3):
+                    if(len(np.shape(box)) == 1):
+                        box=Box([[box[0],0.0,0.0],[0.0,box[1],0.0],[0.0,0.0,box[2]]])
+                    elif(len(np.shape(box))==3):
+                        box=Box(box)
+            z=self.pos[2]-other.pos[2]
+            y=self.pos[1]-other.pos[1]
+            x=self.pos[0]-other.pos[0]
+            #a3z=box.basis[2][2]
+            #a2y=box.basis[1][1]
+            #a1x=box.basis[0][0]
+            if(z < -box.basis[2][2]/2.):
+                x+=box.basis[2][0]
+                y+=box.basis[2][1]
+                z+=box.basis[2][2]
+            elif(z > box.basis[2][2]/2.):
+                x-=box.basis[2][0]
+                y-=box.basis[2][1]
+                z-=box.basis[2][2]
+            if(y + z*_y_z_tilt < -box.basis[1][1]/2. ):
+                x+=box.basis[1][0]
+                y+=box.basis[1][1]
+            elif(y + z*_y_z_tilt > box.basis[1][1]/2. ):
+                x-=box.basis[1][0];
+                y-=box.basis[1][1];
+            if(x + _x_y_tilt * y + _x_z_tilt * z < -box.basis[0][0]/2.):
+                x+=box.basis[0][0];
+            elif(x + _x_y_tilt * y + _x_z_tilt * z > box.basis[0][0]/2.):
+                x-=box.basis[0][0];
+            return(math.sqrt(z**2.0+y**2.0+x**2.0))
+
 
     def checkDim(self, other):
         #Prints dimension warnings as needed

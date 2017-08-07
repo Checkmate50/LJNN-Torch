@@ -4,6 +4,7 @@ import random
 import os
 import sys
 from createSymmFuncts import SymmFunct2, SymmFunct3
+from lammpstrjToData import lammpstrj_to_data
 import helper
 from subprocess import call
 import numpy as np
@@ -30,16 +31,18 @@ Written by Dietrich Geisler
 """
 
 class Box:
-    def __init__(self,basis):
+    def __init__(self, basis):
         self.x_y_tilt = basis[1][0]/basis[1][1];
         self.x_z_tilt = (basis[1][0]*basis[2][0]-basis[1][1]*basis[2][0])/(basis[1][1]*basis[2][2]);
         self.y_z_tilt = basis[2][1]/basis[2][2];
         self.basis=basis
 
 class Atom:
-    def __init__(self, pos):
+    def __init__(self, pos, element, force):
         #Note that the box and atom are translated so that the box originates at (0, 0, 0)
         self.pos = pos
+        self.element = element
+        self.force = force
 
     def calcDistOrtho(self, other, box):
         """
@@ -61,43 +64,35 @@ class Atom:
             r_vals.append(math.sqrt(sum([j**2 for j in diffs])))
             diffs[i] += box[i]  #return to original
 
-        return min(r_vals)
+        return min(r_vals), box
         
-        def calcDist(self,other,box):
-            """
-            Does the former function properly for anything
-            """
-            if(isinstance(box,list)):
-                if(len(box) == 3):
-                    if(len(np.shape(box)) == 1):
-                        box=Box([[box[0],0.0,0.0],[0.0,box[1],0.0],[0.0,0.0,box[2]]])
-                    elif(len(np.shape(box))==3):
-                        box=Box(box)
-            z=self.pos[2]-other.pos[2]
-            y=self.pos[1]-other.pos[1]
-            x=self.pos[0]-other.pos[0]
-            #a3z=box.basis[2][2]
-            #a2y=box.basis[1][1]
-            #a1x=box.basis[0][0]
-            if(z < -box.basis[2][2]/2.):
-                x+=box.basis[2][0]
-                y+=box.basis[2][1]
-                z+=box.basis[2][2]
-            elif(z > box.basis[2][2]/2.):
-                x-=box.basis[2][0]
-                y-=box.basis[2][1]
-                z-=box.basis[2][2]
-            if(y + z*_y_z_tilt < -box.basis[1][1]/2. ):
-                x+=box.basis[1][0]
-                y+=box.basis[1][1]
-            elif(y + z*_y_z_tilt > box.basis[1][1]/2. ):
-                x-=box.basis[1][0];
-                y-=box.basis[1][1];
-            if(x + _x_y_tilt * y + _x_z_tilt * z < -box.basis[0][0]/2.):
-                x+=box.basis[0][0];
-            elif(x + _x_y_tilt * y + _x_z_tilt * z > box.basis[0][0]/2.):
-                x-=box.basis[0][0];
-            return(math.sqrt(z**2.0+y**2.0+x**2.0))
+    def calcDist(self,other,box):
+        """
+        Calculates and returns the closest version of the other atom given a box (which is potentially tilted)
+        """
+        self.checkDim(other)
+        z=self.pos[2]-other.pos[2]
+        y=self.pos[1]-other.pos[1]
+        x=self.pos[0]-other.pos[0]
+        if(z < -box.basis[2][2]/2.):
+            x += box.basis[2][0]
+            y += box.basis[2][1]
+            z += box.basis[2][2]
+        elif(z > box.basis[2][2]/2.):
+            x -= box.basis[2][0]
+            y -= box.basis[2][1]
+            z -= box.basis[2][2]
+        if(y + z*box.y_z_tilt < -box.basis[1][1]/2. ):
+            x += box.basis[1][0]
+            y += box.basis[1][1]
+        elif(y + z*box.y_z_tilt > box.basis[1][1]/2. ):
+            x -= box.basis[1][0]
+            y -= box.basis[1][1]
+        if(x + box.x_y_tilt * y + box.x_z_tilt * z < -box.basis[0][0]/2.):
+            x += box.basis[0][0]
+        elif(x + box.x_y_tilt * y + box.x_z_tilt * z > box.basis[0][0]/2.):
+            x -= box.basis[0][0]
+        return(math.sqrt(z**2.0+y**2.0+x**2.0))
 
 
     def checkDim(self, other):
@@ -117,7 +112,7 @@ class Atom:
         return self.pos == other.pos
 
 
-def generateData(lammps_file, seed, runner_scaling):
+def generateData(lammps_file, seed, data_file, runner_folder):
     """
     Given a lammps_file, seed, and a place to write this information to runner
     Generates the data from the lammps file
@@ -130,12 +125,12 @@ def generateData(lammps_file, seed, runner_scaling):
     call(["bash", "runCommand.bash"])
     for i in range(max(lammps_dir.count("/"), lammps_dir.count("\\"))):
         os.chdir("..")
-    call(["mv", lammps_dir + "runCommand.bash", runner_scaling + "runCommand.bash"])
+    call(["mv", lammps_dir + "runCommand.bash", runner_folder + "runCommand.bash"])
     lammpstrj = ""
     log = lammps_dir + "log.lammps"
     # Copy lammps file to the runner folder
     with open(lammps_file, "r") as fi:
-        with open(runner_scaling + lammps_filename, "w") as fo:
+        with open(runner_folder + lammps_filename, "w") as fo:
             for line in fi:
                 if line.strip().startswith("pair_style"):
                     fo.write("variable\tout equal 100\t# frequency of writing thermo quantities to output file\n")
@@ -152,7 +147,7 @@ def generateData(lammps_file, seed, runner_scaling):
     if not lammpstrj:
         helper.print_error("ERROR: lammpstrj file not written using dump, cannot proceed")
         exit()
-    return lammpstrj, log
+    lammpstrj_to_data(data_file, log, lammpstrj)
 
 
 def getSymmFunctions(symmFunctInfo):
@@ -170,81 +165,82 @@ def getSymmFunctions(symmFunctInfo):
                 helper.print_warning("WARNING: " + str(sline[0]) + " unrecognized symmetry function type")
     return to_return
     
-def readAtomData(filename):
+def readAtomData(filename, split=False):
     """
-    Reads in the atoms of a lammps trj file and assigns them the symmetry function symmFun
-    Assumes that the following is dumped in order: id type x y z [whatever else]
+    Reads in the atoms of a .data file and assigns them the symmetry function symmFun
     Returns an array of atoms for each time step (each combined as an array)
     """
 
-    if not filename.endswith("lammpstrj"):
-        helper.print_warning("WARNING: the atom file " + filename + " is not an apparent lammps trajectory file")
+    if not filename.endswith("data"):
+        helper.print_warning("WARNING: the atom file " + filename + " is not a .data file")
     
     f = open(filename, 'r')
-    count = 0
-    box = []
-    offsets = []
-    data = []
-    atoms = []
-    ang_to_bohr = 1.88973 # Unit change
-    
-    for line in f:
-        if line.strip() == "ITEM: TIMESTEP":
-            count = 0
-            if len(atoms) > 0:
-                data.append(atoms)
-            atoms = []
-        if count in [5, 6, 7]:
-            if len(box) < 3: # We live in a 3D world!
-                ls = map(float, line.split())
-                box.append(ls[1]-ls[0])
-                offsets.append(ls[0])
-            
-        if count > 8:
-            ls = line.split()
-            pos = [(float(ls[i+2]) - offsets[i])*ang_to_bohr for i in range(3)]
-            atoms.append(Atom(pos))
-        count += 1
+    step_data = []
+    energy = 0
+    box_data = []
+    atomData = []
 
-    data.append(atoms) #Add the last set of atoms
-    f.close()
-    return data, box
+    with open(filename, 'r') as f:
+        for line in f:
+            sline = line.strip().lower().split()
+            if sline[0] == "end":
+                atomData.append(getAtoms(step_data), energy, getBox(box_data))
+                box_data = []
+                step_data = []
+            if sline[0] == "lattice":
+                box_data.append(line)
+            elif sline[0] == "atom":
+                step_data.append(line)
+            elif sline[0] == "energy":
+                energy = float(sline[1])
 
+    atomData.append(atoms) #Add the last set of atoms
+    return atomData
 
-def readThermoData(filename):
+def getBox(box_data):
     """
-    Given a log file 'filename'
-    Reads the potential energy at each timestep
-    Returns an array of these energies
+    Given a nxn lattice of box data (with keywords in the first column)
+    Returns the Box object representing this box
     """
+    print(box_data)
+    return Box([list(map(float, dim.split()[1:])) for dim in box_data])
 
-    f = open(filename, 'r')
-    thermo = []
-    ev_to_hartree = 0.0367493 # Converstion factor
-    while f.readline().strip() != "Step Temp PotEng":
-        pass
-    while 1:
-        vals = f.readline().split()
-        if len(vals) != 3:
-            break
-        thermo.append(float(vals[2]) * ev_to_hartree)
-        
-    f.close()
-    return thermo
-
-
-def getScalingData(atoms, box, symmFuncts):
+def getAtoms(step_data):
     """
-    Given a list of atoms
+    Given a timestep worth of atoms
+    Reads and returns the data in that timestep
+
+    Note that we assume individual atom information follows the format:
+    atom x y z element_str s_at_e charge fx fy fz
+    """
+    to_return = []
+    line = step_data[0][len("ITEM: ATOMS"):]
+    ls = line.strip().split()
+    pos_index = 1
+    element_index = 4
+    force_index = 7
+    for line in step_data:
+        ls = line.strip().split()
+        pos = [float(ls[i+pos_index]) for i in range(3)]
+        element = ls[element_index]
+        force = [float(ls[i+pos_index]) for i in range(3)]
+        to_return.append(Atom(pos, element, force))
+    return to_return
+
+
+def getScalingData(atoms, symmFuncts):
+    """
+    Given a list of configurations
+    - 3-dimensional arrays with atomic positions, a potential energy, and a box -
     Calculates the scaling data for each configuration of atoms
     And computes the metadata for each symmFunct
     """
 
     for i in range(len(atoms)):
         print("Calculating timestep " + str(i+1))
-        for j in atoms[i]:
+        for configuration in atoms[i]:
             for funct in symmFuncts:
-                funct.call(j, atoms[i], box)
+                funct.call(configuration[0], configuration[1], configuration[2])
     for funct in symmFuncts:
         funct.set_info()
 
@@ -272,7 +268,7 @@ def writeBatch(filename, count, pe, symmFuncts, metaIndex, scale_min, scale_max)
 
 
 # UPDATE TO SUPPORT MULTIPLE ATOM TYPES
-def writeScaling(symmFuncts, info, pe, atomCount, seed, scalingData, nnInfoFile):
+def writeScaling(symmFuncts, info, pe, atomCount, seed, scalingData, nnInfoFile, runnerFolder):
     """
     Given an array of symmetry functions 'symmFuncts'
     The results of applying these symmetry functions to each element in 'info'
@@ -291,7 +287,7 @@ def writeScaling(symmFuncts, info, pe, atomCount, seed, scalingData, nnInfoFile)
     if data["layers"] == 1:
         data["nodes"] = [data["nodes"]]
         data["activationfunctions"] = [data["activationfunctions"]]
-    with open("runner/input.nn", "w") as f:
+    with open(runnerFolder + "input.nn", "w") as f:
         # Write Settings
         with open("bin/scalingBasics.txt", "r") as fi:
             for line in fi:
@@ -311,9 +307,9 @@ def writeScaling(symmFuncts, info, pe, atomCount, seed, scalingData, nnInfoFile)
         for funct in symmFuncts:
             f.write(str(funct) + "\n")
 
-    call(["cp", "runner/input.nn", "runner/input.nn.RuNNer++"])
+    call(["cp", runnerFolder + "input.nn", "runner/input.nn.RuNNer++"])
     
-    with open("runner/scaling.data", "w") as f:
+    with open(runnerFolder + "scaling.data", "w") as f:
         # Write Scaling Information
         count = 0
         for i in range(1):
@@ -333,22 +329,18 @@ def main():
     defaults = {"generateData" : True, "trainRatio" : 0.9, "runnerScaling" : "../runner/", "verbose" : False}
     data = helper.get_data(sys.argv[1], defaults)
     verbose = data["verbose"]
-    if data["generateData"]:
+    runnerFolder = data["runnerfolder"]
+    data_file = data["datafile"]
+    if data["generatedata"]:
         print("Generating lammps data")
         if not (data.has_key("lammpsfile") and data.has_key("seedrange")):
             print("Give a lammpsFile and seedRange if you want to generate data")
             return
         seed = random.randint(data["seedrange"][0], data["seedrange"][1])
-        lammpstrj, log = generateData(data["lammpsfile"], seed, data["runnerscaling"])
-    else:
-        if not (data.has_key("lammpstrj") and data.has_key("log") and data.has_key("seed")):
-            print("Give a lammpstrj location, log location, and seed if you don't want to generate data")
-            return
-        seed = data["seed"]
-        lammpstrj = data["lammpstrj"]
-        log = data["log"]
-    print("Reading atomic data from " + lammpstrj)
-    atomData, box = readAtomData(lammpstrj)
+        generateData(data["lammpsfile"], seed, data_file, runnerFolder)
+    seed = data["seed"]
+    print("Reading atomic data from " + data_file)
+    atomData = readAtomData(lammpstrj)
     print("Reading thermodynamic data from " + log)
     thermoData = readThermoData(log)
     print("Shuffling data")
@@ -400,7 +392,7 @@ def main():
                 print(e)
 
     print("Calculating scaling metadata for " + str(len(atomData)) + " timesteps")
-    getScalingData(atomData, box, functs)
+    getScalingData(atomData, functs)
     print("Writing " + str(trainCutoff) + " training files and " + str(len(atomData)-trainCutoff) + " testing files")
     info = [list([[0, 0, int(1e10), int(-1e10)] for _ in range(len(functs))])]
     metaIndex = 0
@@ -419,18 +411,6 @@ def main():
 
     print("Writing function information to scaling.data")
     writeScaling(functs, info, thermoData, len(atomData[0]), seed, data, sys.argv[3])
-    
-            
-def countInCutoff(atoms, cutoff):
-    # Test Function
-    with open("dists.txt", 'w') as f:
-        for i in atoms:
-            count = 0
-            for j in atoms:
-                if i.calcDist(j) <= cutoff:
-                    count += 1
-            f.write(str(count) + "\n")
-    exit() # Only used for testing stuff...
         
     
 if __name__ == "__main__":

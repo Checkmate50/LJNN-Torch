@@ -23,13 +23,12 @@ ttInfo:
 lammpsFile	o
 seedRange	o
 generateData	o
-lammpstrj	o
-log		o
-seed		o
+seed  o
+dataFile	  r
 trainFolder	r
 testFolder	r
 trainRatio	r
-runnerScaling	r
+runnerFolder	r
 verbose		o
 scaleMin	o
 scaleMax	o

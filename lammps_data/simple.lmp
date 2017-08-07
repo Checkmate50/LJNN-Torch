@@ -23,10 +23,9 @@ pair_modify 	shift yes
 velocity 	all create 50.0 ${seed} mom yes rot yes
 
 thermo		100
-thermo_style 	custom step temp pe
+thermo_style 	custom step temp etotal pe cella cellb cellc cellalpha cellbeta cellgamma
 timestep	0.002
-dump		2 all custom 100 first.lammpstrj id type x y z element fx fy fz
-write_dump	all xyz pos.xyz modify element C
+dump		2 all custom 100 first.lammpstrj x y z element fx fy fz
 restart 	500 restart1 restart2
 
 fix 		1 all nvt temp 50.0 400.0 1.0

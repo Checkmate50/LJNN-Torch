@@ -1,15 +1,14 @@
 lammpsFile	lammps_data/simple.lmp	# The file we are actually using to generate data (only used if generateData is True)
 seedRange	1 100000		# The range of integer seeds potentially used (only used if generateData is True)
 generateData	True			# Whether or not we should generate data or use premade data
+seed	  	# The seed used if you want a particular seed (only used if generateData is True)
 
-lammpstrj	# The lammps trajectory file (only used if generateData is False)
-log		# The lammps log file (only used if generateData is False)
-seed		# The seed used (only used if generateData is False)
+dataFile  lammps_data/first.data  # Where to read/write the .data file
 
 trainFolder	bin/trainFiles/	# The location to store train files
 testFolder	bin/testFiles/	# The location to store test files
 trainRatio	0.9		# The ratio of train to test files
-runnerScaling	runner/	# The location to write scaling.data for RuNNer
+runnerFolder	runner/	# The location to write scaling.data for RuNNer
 
 verbose		True		# Whether or not the train/test file should print progress
 

@@ -20,8 +20,13 @@ file_num = 0
 #  unknown = 2 #look for commans
 #  num_atoms = 3
 
+#Conversions
+E_conversion_factor = 0.036749309/23.0609 #this is kcal/mol to hartree
+F_conversion_factor = 0.01944689673/23.0609 #this is kcal/mol /angstrom to atomic units of force Hartree/Bohr
+D_conversion_factor = 1.889716164632072 #this is Angstrom to Bohr
+
 #assume that the write file is correct
-def write_header(i):
+def write_header(out, i):
     out.write("begin\n")  
     out.write("comment Conformation "+ str(i) +"\n")
 
@@ -44,7 +49,7 @@ def which_col(searched,search_term):
     return -1
 
 
-def print_lattice_basis(a):
+def print_lattice_basis(out, a):
     out.write("lattice")
     i = 0
     #  print a
@@ -64,17 +69,11 @@ def print_lattice_basis(a):
 
 
 def lammpstrj_to_data(data_file, thermo_file, lammpstrj_file):
-    out = open(argv[1], 'w')
-    thermo = open(argv[2], 'r')
-    lammpstrj_file = argv[3] # this is without .xyz
+    out = open(data_file, 'w')
+    thermo = open(thermo_file, 'r')
     temp = thermo.readline()
     max_nrg = 100.0
     which_run = 1 #this is useful if the first run is not of interest, due to i.e. being an optimization
-
-    #Conversions
-    E_conversion_factor = 0.036749309/23.0609 #this is kcal/mol to hartree
-    F_conversion_factor = 0.01944689673/23.0609 #this is kcal/mol /angstrom to atomic units of force Hartree/Bohr
-    D_conversion_factor = 1.889716164632072 #this is Angstrom to Bohr
 
     #TO DO DISTANCE CONVERSIONS
     do_forces = True
@@ -107,8 +106,8 @@ def lammpstrj_to_data(data_file, thermo_file, lammpstrj_file):
     curr_tsk = 'unknown'
     conf_num = 1
     xyz_cols_known = False #do we know x y z element fx fy fz
-    with open(lammpstrj_file) as lammpstrj_file:
-        for line in lammpstrj_file:
+    with open(lammpstrj_file) as atom_file:
+        for line in atom_file:
             if curr_tsk == 'unknown':
                 if line.startswith("ITEM: ATOMS"):
                     if (xyz_cols_known == False):
@@ -131,7 +130,7 @@ def lammpstrj_to_data(data_file, thermo_file, lammpstrj_file):
                     temp2 = temp1.split(" ")
                     energy = float(temp2[eng_col])
                     if energy < max_nrg:
-                        write_header(conf_num)
+                        write_header(out, conf_num)
                     conf_num+=1
                     if print_cell:
                         a = float(temp2[a_col])
@@ -158,9 +157,9 @@ def lammpstrj_to_data(data_file, thermo_file, lammpstrj_file):
                         else:
                             y_z = 0.0
 
-                        print_lattice_basis(b1)
-                        print_lattice_basis(b2)
-                        print_lattice_basis(b3)
+                        print_lattice_basis(out, b1)
+                        print_lattice_basis(out, b2)
+                        print_lattice_basis(out, b3)
                         #BoOm
                     else:
                         print "Energy of rejected conformation " + str(energy*energy_conversion_factor)

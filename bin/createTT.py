@@ -101,7 +101,7 @@ class Atom:
             helper.print_warning("WARNING: two compared atoms have different position dimensions")
                 
     def __str__(self):
-        return str(self.pos)
+        return self.element + " at " + str(self.pos)
 
     def __repr__(self):
         return self.__str__()
@@ -147,6 +147,8 @@ def generateData(lammps_file, seed, data_file, runner_folder):
     if not lammpstrj:
         helper.print_error("ERROR: lammpstrj file not written using dump, cannot proceed")
         exit()
+    print("converting to data!")
+    print data_file, log, lammpstrj
     lammpstrj_to_data(data_file, log, lammpstrj)
 
 
@@ -165,7 +167,7 @@ def getSymmFunctions(symmFunctInfo):
                 helper.print_warning("WARNING: " + str(sline[0]) + " unrecognized symmetry function type")
     return to_return
     
-def readAtomData(filename, split=False):
+def readAtomData(filename):
     """
     Reads in the atoms of a .data file and assigns them the symmetry function symmFun
     Returns an array of atoms for each time step (each combined as an array)
@@ -179,12 +181,14 @@ def readAtomData(filename, split=False):
     energy = 0
     box_data = []
     atomData = []
+    thermoData = []
 
     with open(filename, 'r') as f:
         for line in f:
             sline = line.strip().lower().split()
             if sline[0] == "end":
-                atomData.append(getAtoms(step_data), energy, getBox(box_data))
+                atomData.append([getAtoms(step_data), getBox(box_data)])
+                thermoData.append(energy)
                 box_data = []
                 step_data = []
             if sline[0] == "lattice":
@@ -193,16 +197,14 @@ def readAtomData(filename, split=False):
                 step_data.append(line)
             elif sline[0] == "energy":
                 energy = float(sline[1])
-
-    atomData.append(atoms) #Add the last set of atoms
-    return atomData
+                
+    return atomData, thermoData
 
 def getBox(box_data):
     """
     Given a nxn lattice of box data (with keywords in the first column)
     Returns the Box object representing this box
     """
-    print(box_data)
     return Box([list(map(float, dim.split()[1:])) for dim in box_data])
 
 def getAtoms(step_data):
@@ -236,11 +238,11 @@ def getScalingData(atoms, symmFuncts):
     And computes the metadata for each symmFunct
     """
 
-    for i in range(len(atoms)):
-        print("Calculating timestep " + str(i+1))
-        for configuration in atoms[i]:
+    for timestep in range(len(atoms)):
+        print("Calculating timestep " + str(timestep+1))
+        for atom in atoms[timestep][0]:
             for funct in symmFuncts:
-                funct.call(configuration[0], configuration[1], configuration[2])
+                funct.call(atom, atoms[timestep][0], atoms[timestep][1]) # index, atomList, box
     for funct in symmFuncts:
         funct.set_info()
 
@@ -333,16 +335,17 @@ def main():
     data_file = data["datafile"]
     if data["generatedata"]:
         print("Generating lammps data")
-        if not (data.has_key("lammpsfile") and data.has_key("seedrange")):
-            print("Give a lammpsFile and seedRange if you want to generate data")
+        if not (data.has_key("lammpsfile") and (data.has_key("seedrange") or data.has_key("seed"))):
+            print("Give a lammpsFile and seedRange or seed if you want to generate data")
             return
-        seed = random.randint(data["seedrange"][0], data["seedrange"][1])
+        if data.has_key("seedrange"):
+            seed = random.randint(data["seedrange"][0], data["seedrange"][1])
+        else:
+            seed = data["seed"]
         generateData(data["lammpsfile"], seed, data_file, runnerFolder)
-    seed = data["seed"]
+    
     print("Reading atomic data from " + data_file)
-    atomData = readAtomData(lammpstrj)
-    print("Reading thermodynamic data from " + log)
-    thermoData = readThermoData(log)
+    atomData, thermoData = readAtomData(data_file)
     print("Shuffling data")
     z = list(zip(atomData, thermoData))
     random.shuffle(z)
@@ -410,7 +413,7 @@ def main():
         i += 1
 
     print("Writing function information to scaling.data")
-    writeScaling(functs, info, thermoData, len(atomData[0]), seed, data, sys.argv[3])
+    writeScaling(functs, info, thermoData, len(atomData[0]), seed, data, sys.argv[3], runnerFolder)
         
     
 if __name__ == "__main__":

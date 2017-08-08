@@ -29,4 +29,4 @@ dump		2 all custom 100 first.lammpstrj x y z element fx fy fz
 restart 	500 restart1 restart2
 
 fix 		1 all nvt temp 50.0 400.0 1.0
-run		50000
+run		1000

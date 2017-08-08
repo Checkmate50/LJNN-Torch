@@ -56,7 +56,7 @@ class SymmFunct2:
 class SymmFunct3:
     def __init__(self, g, f, fatom, tatom, thatom, eta, lamb, zeta, Rc):
         self.f = f
-        self.g = g
+        self.g = getG(g)
         self.fatom = fatom
         self.tatom = tatom
         self.thatom = thatom
@@ -69,7 +69,7 @@ class SymmFunct3:
     def call(self, i, atomList, box):
         # Adds the given calculation to data and returns that value
         self.data.append(self.g(self.f, self.Rc, self.eta, self.lamb, self.zeta, i, atomList, box))
-        return data[-1]
+        return self.data[-1]
 
     def set_info(self):
         self.info = [min(self.data), max(self.data), sum(self.data)/len(self.data)]
@@ -148,65 +148,65 @@ def g2(f, Rc, eta, Rs, i, atomList, box):
     return sum
 
 
-def g3(f, Rc, i, atomList, box):
-  fc = partial(getFc(f), Rc)
-  sum = 0
-  for j in atomList:
-    if i == j:
-    continue
-    subsum = 0
-    for k in atomList:
-      if i == k or j == k:
-        continue
-      Rik = i.calcDist(k, box)
-      Rjk = j.calcDist(k, box)
-      subsum += fc(Rik) + fc(Rjk)
-    Rij = i.calcDist(j, box)
-    sum += fc(Rij) * subsum
-  return sum
+def g3(f, Rc, eta, lamb, zeta, i, atomList, box):
+    fc = partial(getFc(f), Rc)
+    sum = 0
+    for j in atomList:
+        if i == j:
+            continue
+        subsum = 0
+        for k in atomList:
+            if i == k or j == k:
+                continue
+            Rik = i.calcDist(k, box)
+            Rjk = j.calcDist(k, box)
+            subsum += fc(Rik) + fc(Rjk)
+        Rij = i.calcDist(j, box)
+        sum += fc(Rij) * subsum
+    return sum
 
 
-def g4(f, Rc, eta, i, atomList, box):
-  fc = partial(getFc(f), Rc)
-  sum = 0
-  for j in atomList:
-    if i == j:
-    continue
-    subsum = 0
-    for k in atomList:
-      if i == k or j == k:
-        continue
-      Rik = i.calcDist(k, box)
-      Rjk = j.calcDist(k, box)
-      subsum += fc(Rik) * math.exp(-eta*(Rik)**2) + fc(Rjk) * math.exp(-eta*(Rjk)**2)
-    Rij = i.calcDist(j, box)
-    sum += fc(Rij) * math.exp(-eta*(Rij)**2) *  subsum
-  return sum
+def g4(f, Rc, eta, lamb, zeta, i, atomList, box):
+    fc = partial(getFc(f), Rc)
+    sum = 0
+    for j in atomList:
+        if i == j:
+            continue
+        subsum = 0
+        for k in atomList:
+            if i == k or j == k:
+                continue
+            Rik = i.calcDist(k, box)
+            Rjk = j.calcDist(k, box)
+            subsum += fc(Rik) * math.exp(-eta*(Rik)**2) + fc(Rjk) * math.exp(-eta*(Rjk)**2)
+        Rij = i.calcDist(j, box)
+        sum += fc(Rij) * math.exp(-eta*(Rij)**2) *  subsum
+    return sum
 
 
 def lazy_angle(a, b, c):
-  # Calculates and returns the angle 'C', ignoring arccos cause we take the cos anyway
-  #https://en.wikipedia.org/wiki/Law_of_cosines
-  return (a**2 + b**2 - c**2) / (2 * a * b)
+    # Calculates and returns the angle 'C', ignoring arccos cause we take the cos anyway
+    #https://en.wikipedia.org/wiki/Law_of_cosines
+    return (a**2 + b**2 - c**2) / (2 * a * b)
 
 
 def g9(f, Rc, eta, lamb, zeta, i, atomList, box):
-  fc = partial(getFc(f), Rc)
-  sum = 0
-  for j in atomList:
-    if i == j:
-    continue
-    subsum = 0
-    for k in atomList:
-      if i == k or j == k:
-        continue
-      Rik = i.calcDist(k, box)
-      Rjk = j.calcDist(k, box)
-      theta = lazy_angle(Rij, Rik, Rjk)
-      subsum += (1 + lamb*theta)**zeta * math.exp(-eta*(Rij**2 + Rjk**2)) * fc(Rik) * fc(Rjk)
-    Rij = i.calcDist(j, box)
-    sum += fc(Rij) * math.exp(-eta*(Rij)**2) * 2**(1-zeta) * subsum
-  return sum
+    fc = partial(getFc(f), Rc)
+    sum = 0
+    for j in atomList:
+        if i == j:
+            continue
+        subsum = 0
+        Rij = i.calcDist(j, box)
+        for k in atomList:
+            if i == k or j == k:
+                continue
+            Rik = i.calcDist(k, box)
+            Rjk = j.calcDist(k, box)
+            theta = lazy_angle(Rij, Rik, Rjk)
+            subsum += (1 + lamb*theta)**zeta * math.exp(-eta*(Rij**2 + Rjk**2)) * fc(Rik) * fc(Rjk)
+        sum += fc(Rij) * math.exp(-eta*(Rij)**2) * 2**(1-zeta) * subsum
+    return sum
     
 
 def getG(i):
@@ -214,10 +214,12 @@ def getG(i):
         return g1
     elif i == 2:
         return g2
+    elif i == 3:
+        return g3
     elif i == 4:
         return g4
     elif i == 9:
         return g9
     else:
-        helper.print_warning("WARNING: " + str(i) + " unrecognized g funciton number")
+        helper.print_warning("WARNING: " + str(i) + " unrecognized g function number")
         return g1

@@ -333,6 +333,29 @@ def main():
     verbose = data["verbose"]
     runnerFolder = data["runnerfolder"]
     data_file = data["datafile"]
+    
+    should_delete = raw_input("Cleaning (deleting all files) from " + data["trainfolder"] + "  Type 'yes' to confirm:\n")
+    if should_delete == "yes":
+        # Stolen from: https://stackoverflow.com/questions/185936/delete-folder-contents-in-python
+        folder = data["trainfolder"]
+        for the_file in os.listdir(folder):
+            file_path = os.path.join(folder, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(e)
+    should_delete2 = raw_input("Cleaning (deleting all files) from " + data["testfolder"] + "  Type 'yes' to confirm:\n")
+    if should_delete2 == "yes":
+        folder = data["testfolder"]
+        for the_file in os.listdir(folder):
+            file_path = os.path.join(folder, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(e)
+                
     if data["generatedata"]:
         print("Generating lammps data")
         if not (data.has_key("lammpsfile") and (data.has_key("seedrange") or data.has_key("seed"))):
@@ -371,28 +394,6 @@ def main():
     trainRatio = data["trainratio"]
     trainCutoff = int(trainRatio * len(atomData)) + 1
     i = 0
-
-    should_delete = raw_input("Cleaning (deleting all files) from " + data["trainfolder"] + "  Type 'yes' to confirm:\n")
-    if should_delete == "yes":
-        # Stolen from: https://stackoverflow.com/questions/185936/delete-folder-contents-in-python
-        folder = data["trainfolder"]
-        for the_file in os.listdir(folder):
-            file_path = os.path.join(folder, the_file)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except Exception as e:
-                print(e)
-    should_delete2 = raw_input("Cleaning (deleting all files) from " + data["testfolder"] + "  Type 'yes' to confirm:\n")
-    if should_delete2 == "yes":
-        folder = data["testfolder"]
-        for the_file in os.listdir(folder):
-            file_path = os.path.join(folder, the_file)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except Exception as e:
-                print(e)
 
     print("Calculating scaling metadata for " + str(len(atomData)) + " timesteps")
     getScalingData(atomData, functs)

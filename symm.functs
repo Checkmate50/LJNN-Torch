@@ -5,3 +5,10 @@
 2 2 2 C C 0.5 6 12
 2 2 2 C C 0.5 7 12
 2 2 2 C C 0.5 8 12
+
+#3-body functions
+#3 g f center_atom second_atom third_atom eta lamba zeta Rc
+#Note that only g9 uses lambda and zeta, but they should still be included for g3 and g4 functions
+3 3 2 C C C 0.5 0 0 12
+3 4 2 C C C 0.5 0 0 12
+3 5 2 C C C 0.5 1 1 12

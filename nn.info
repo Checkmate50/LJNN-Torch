@@ -13,11 +13,11 @@ activationFunctions   t # The activation function used by each layer
 
 epochs		100  			# The number of epochs to train this network
 criterion	mse			# The loss criterion to use
-learningRate	.001			# The rate of learning for the learning algorithm
+learningRate	.003			# The rate of learning for the learning algorithm
 learningRateDecay .0001			# Hyperparameter
-weightDecay	  0			# Hyperparameter
+weightDecay	  0.01			# Hyperparameter
 momentum	  0			# Hyperparameter
-printFreq	10			# How often to print the network loss
+printFreq	5			# How often to print the network loss
 
 
 ############################################

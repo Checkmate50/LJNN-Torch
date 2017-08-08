@@ -13,7 +13,7 @@ createNN	bin/createNN.lua  # nn building file (optional)
 trainNN		bin/trainNN.lua	  # nn training file
 testNN		bin/testNN.lua	  # nn testing file
 translateNN	bin/translateNN.lua	# nn translating file (optional)
-createNewTT	True	# Whether or not we should build new train/test files
+createNewTT	False	# Whether or not we should build new train/test files
 createNewNN	True	# Whether or not we construct a new neural network
 testOnly	False	# If we only want to test the neural network
 runTests	False	# If we don't want to test the neural network after training

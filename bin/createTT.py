@@ -405,12 +405,12 @@ def main():
     while i < trainCutoff:
         if verbose:
             print("Writing Training Batch: " + str(i+1))
-        metaIndex = writeBatch(trainFolder + str(i+1) + ".nndata", len(atomData[i]), thermoData[i], functs, metaIndex, scale_min, scale_max)
+        metaIndex = writeBatch(trainFolder + str(i+1) + ".nndata", len(atomData[i][0]), thermoData[i], functs, metaIndex, scale_min, scale_max)
         i += 1
     while i < len(atomData):
         if verbose:
             print("Writing Test Batch: " + str(i+1-trainCutoff))
-        metaIndex = writeBatch(testFolder + str(i+1-trainCutoff) + ".nndata", len(atomData[i]), thermoData[i], functs, metaIndex, scale_min, scale_max)
+        metaIndex = writeBatch(testFolder + str(i+1-trainCutoff) + ".nndata", len(atomData[i][0]), thermoData[i], functs, metaIndex, scale_min, scale_max)
         i += 1
 
     print("Writing function information to scaling.data")

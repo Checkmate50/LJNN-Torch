@@ -1,0 +1,32 @@
+# LJ
+
+units		metal
+atom_style	atomic
+boundary 	p p p
+
+
+#read_restart	pol.restart_300_1
+
+lattice 	fcc 5
+region          box block 0 10 0 10 0 10 units lattice
+create_box	1 box
+
+region 		cryst block 1 9 1 9 1 9 units lattice
+create_atoms 	1 random 80 ${seed} box
+
+mass		1 12 
+
+pair_style 	lj/cut 9
+pair_coeff 	1 1 0.05 3.0 	#solid at 0.05/liquid at 0.25 at 300 K
+pair_modify 	shift yes
+
+velocity 	all create 200.0 ${seed} mom yes rot yes
+
+thermo		100
+thermo_style 	custom step temp etotal pe cella cellb cellc cellalpha cellbeta cellgamma
+timestep	0.002
+dump		2 all custom 100 gas.lammpstrj x y z element fx fy fz
+restart 	500 restart1 restart2
+
+fix 		1 all nvt temp 500.0 1000.0 1.0
+run		200000
